@@ -5,9 +5,9 @@ import { AuthLayout } from '../../../components/layout';
 import { Button, Input } from '../../../components/ui';
 import { containerVariants, itemVariants } from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
-import { MOCK_ADMIN_USER, MOCK_MEMBER_USER, MOCK_SUBSCRIPTION } from '../../../lib/mockData';
+import { getMe, signInWithPassword } from '../../../services/auth.service';
+import { useToastStore } from '../../../stores/toastStore';
 import { useUserStore } from '../../../stores/userStore';
-import type { Subscription, User } from '../../../types';
 import styles from './LoginPage.module.css';
 
 type LoginFormData = {
@@ -21,16 +21,12 @@ const isEmailValid = (value: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 };
 
-const createSubscriptionForUser = (user: User): Subscription => ({
-  ...MOCK_SUBSCRIPTION,
-  id: `${MOCK_SUBSCRIPTION.id}-${user.id}`,
-  userId: user.id,
-});
-
 export const LoginPage = () => {
   const navigate = useNavigate();
   const setUser = useUserStore((state) => state.setUser);
   const setSubscription = useUserStore((state) => state.setSubscription);
+  const setAuthToken = useUserStore((state) => state.setAuthToken);
+  const addToast = useToastStore((state) => state.addToast);
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -81,36 +77,33 @@ export const LoginPage = () => {
     return !nextErrors.email && !nextErrors.password;
   };
 
-  const finalizeLogin = (user: User, destination: string) => {
-    setUser(user);
-    setSubscription(createSubscriptionForUser(user));
-    navigate(destination);
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      const session = await signInWithPassword(formData.email, formData.password);
+      setAuthToken(session.access_token);
+      const me = await getMe();
+      setUser(me.user);
+      setSubscription(me.subscription);
+      navigate(me.user.isAdmin ? ROUTES.ADMIN_USERS : ROUTES.DASHBOARD);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Login failed';
+      addToast({
+        type: 'error',
+        message,
+      });
+    } finally {
       setIsSubmitting(false);
-      finalizeLogin(
-        {
-          id: '1',
-          email: formData.email,
-          fullName: 'James Whitfield',
-          isAdmin: false,
-          createdAt: '2024-06-01T00:00:00Z',
-        },
-        ROUTES.DASHBOARD,
-      );
-    }, 1000);
+    }
   };
 
-  const handleDemoLogin = (user: User, destination: string) => {
-    finalizeLogin(user, destination);
+  const handleDemoLogin = (email: string, password: string) => {
+    setFormData({ email, password });
   };
 
   return (
@@ -183,17 +176,17 @@ export const LoginPage = () => {
               variant="secondary"
               size="sm"
               fullWidth
-              onClick={() => handleDemoLogin(MOCK_MEMBER_USER, ROUTES.DASHBOARD)}
+              onClick={() => handleDemoLogin('member@example.com', 'Password123!')}
             >
-              Login as Member
+              Fill Member Credentials
             </Button>
             <Button
               variant="secondary"
               size="sm"
               fullWidth
-              onClick={() => handleDemoLogin(MOCK_ADMIN_USER, ROUTES.ADMIN_USERS)}
+              onClick={() => handleDemoLogin('admin@example.com', 'Password123!')}
             >
-              Login as Admin
+              Fill Admin Credentials
             </Button>
           </div>
         </motion.div>

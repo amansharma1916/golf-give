@@ -5,6 +5,9 @@ import { AuthLayout } from '../../../components/layout';
 import { Badge, Button, Input } from '../../../components/ui';
 import { containerVariants, itemVariants } from '../../../lib/animations';
 import { PLANS, ROUTES } from '../../../lib/constants';
+import { getMe, registerProfile, signUpWithPassword } from '../../../services/auth.service';
+import { useToastStore } from '../../../stores/toastStore';
+import { useUserStore } from '../../../stores/userStore';
 import styles from './SignupPage.module.css';
 
 type SignupStep = 1 | 2;
@@ -30,40 +33,22 @@ type CharityOption = {
 
 const CHARITY_OPTIONS: CharityOption[] = [
   {
-    id: 'golf-foundation',
-    name: 'Golf Foundation',
+    id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+    name: 'Red Cross',
     category: 'Youth',
-    description: 'Opening pathways for children to access coaching, equipment, and local club sessions.',
+    description: 'International humanitarian organization.',
   },
   {
-    id: 'veterans-golf-society',
-    name: 'Veterans Golf Society',
+    id: 'f47ac10b-58cc-4372-a567-0e02b2c3d480',
+    name: 'Oxfam',
     category: 'Mental Health',
-    description: 'Supporting veterans through community rounds, mentoring, and wellbeing programs.',
+    description: 'Global charity fighting poverty.',
   },
   {
-    id: 'caddy-scholarship-fund',
-    name: 'Caddy Scholarship Fund',
+    id: 'f47ac10b-58cc-4372-a567-0e02b2c3d481',
+    name: 'Doctors Without Borders',
     category: 'Education',
-    description: 'Funding education grants for caddies and their families across the UK and Ireland.',
-  },
-  {
-    id: 'inclusive-fairways',
-    name: 'Inclusive Fairways',
-    category: 'Inclusion',
-    description: 'Improving access to golf for players with disabilities through adaptive equipment support.',
-  },
-  {
-    id: 'greens-for-good',
-    name: 'Greens for Good',
-    category: 'Environment',
-    description: 'Helping clubs invest in biodiversity projects, water conservation, and sustainable turf care.',
-  },
-  {
-    id: 'junior-links-network',
-    name: 'Junior Links Network',
-    category: 'Community',
-    description: 'Running local school partnerships and affordable beginner programs in underserved areas.',
+    description: 'Medical humanitarian aid organization.',
   },
 ];
 
@@ -178,6 +163,10 @@ const stepVariants = {
 
 export const SignupPage = () => {
   const navigate = useNavigate();
+  const addToast = useToastStore((state) => state.addToast);
+  const setAuthToken = useUserStore((state) => state.setAuthToken);
+  const setUser = useUserStore((state) => state.setUser);
+  const setSubscription = useUserStore((state) => state.setSubscription);
 
   const [currentStep, setCurrentStep] = useState<SignupStep>(1);
   const [direction, setDirection] = useState<Direction>(1);
@@ -259,10 +248,33 @@ export const SignupPage = () => {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      const session = await signUpWithPassword(formData.email, formData.password);
+
+      setAuthToken(session.access_token);
+
+      await registerProfile(session.access_token, {
+        fullName: formData.fullName,
+        charityId: formData.charityId,
+        contributionPercentage: formData.contributionPercentage,
+      });
+
+      const me = await getMe();
+      setUser(me.user);
+      setSubscription(me.subscription);
+
+      addToast({
+        type: 'success',
+        message: 'Account created successfully. Choose your plan to continue.',
+      });
+
+      navigate(`${ROUTES.SUBSCRIBE}?plan=monthly&charity=${formData.charityId}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to create account';
+      addToast({ type: 'error', message });
+    } finally {
       setIsSubmitting(false);
-      navigate(`${ROUTES.SUBSCRIBE}?plan=monthly`);
-    }, 1500);
+    }
   };
 
   const filledRange = `${((formData.contributionPercentage - 10) / 90) * 100}%`;

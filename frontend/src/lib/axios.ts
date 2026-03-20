@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { useUserStore } from '../stores/userStore';
-import type { User } from '../types';
+import { env } from './env';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: env.VITE_API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -11,8 +11,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const user = useUserStore.getState().user as (User & { token?: string }) | null;
-  const token = user?.token;
+  const token = useUserStore.getState().authToken;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

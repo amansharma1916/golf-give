@@ -5,6 +5,7 @@ import { SubscribeLayout } from '../../../components/layout';
 import { Badge, Button, Card, Spinner } from '../../../components/ui';
 import { containerVariants, itemVariants, pageTransition, pageVariants } from '../../../lib/animations';
 import { PLANS, ROUTES, type PlanId } from '../../../lib/constants';
+import { activateSubscription } from '../../../services/subscriptions.service';
 import { useToastStore as toastStore } from '../../../stores/toastStore';
 import { useUserStore as userStore } from '../../../stores/userStore';
 import styles from './SubscribePage.module.css';
@@ -75,7 +76,6 @@ export const SubscribePage = () => {
   const [processingStage, setProcessingStage] = useState<ProcessingStage>('idle');
   const [visibleSteps, setVisibleSteps] = useState(0);
 
-  const user = userStore((state) => state.user);
   const subscription = userStore((state) => state.subscription);
   const isAuthenticated = userStore((state) => state.isAuthenticated);
   const setSubscription = userStore((state) => state.setSubscription);
@@ -147,7 +147,7 @@ export const SubscribePage = () => {
     };
   }, []);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (processingStage !== 'idle') {
       return;
     }
@@ -155,17 +155,13 @@ export const SubscribePage = () => {
     setIsProcessing(true);
     setProcessingStage('processing');
 
-    activationTimerRef.current = window.setTimeout(() => {
-      setSubscription({
-        id: `demo-sub-${Date.now()}`,
-        userId: user?.id || 'mock-user-1',
-        plan: safePlan,
-        status: 'active',
-        currentPeriodEnd:
-          safePlan === 'monthly'
-            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-            : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+    try {
+      await new Promise((resolve) => {
+        activationTimerRef.current = window.setTimeout(resolve, 1200);
       });
+
+      const subscriptionData = await activateSubscription(safePlan);
+      setSubscription(subscriptionData);
 
       addToast({
         message: 'Welcome to GolfGive! Your subscription is active.',
@@ -174,7 +170,15 @@ export const SubscribePage = () => {
 
       setIsProcessing(false);
       setProcessingStage('success');
-    }, 2000);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to activate subscription';
+      addToast({
+        message,
+        type: 'error',
+      });
+      setIsProcessing(false);
+      setProcessingStage('idle');
+    }
   };
 
   const confirmButtonText = useMemo(() => {
