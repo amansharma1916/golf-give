@@ -1,0 +1,145 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.formSide {
+  flex: 0 0 55%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  overflow-y: auto;
+}
+
+.formContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-16) var(--space-12);
+}
+
+.brandLogo {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: none;
+  display: block;
+  margin-bottom: var(--space-8);
+  letter-spacing: -0.02em;
+}
+
+.brandSide {
+  flex: 0 0 45%;
+  background: var(--color-primary);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.brandBg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 30%,
+    color-mix(in srgb, var(--color-accent) 18%, transparent) 0%,
+    transparent 65%
+  );
+}
+
+.brandLogoTop {
+  position: absolute;
+  top: var(--space-8);
+  left: var(--space-8);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-accent);
+  z-index: 1;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.brandContent {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-12);
+}
+
+.brandQuote {
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 700;
+  color: var(--color-text-inverse);
+  font-style: italic;
+  line-height: var(--leading-tight);
+  margin-bottom: var(--space-8);
+  max-width: 320px;
+}
+
+.brandBullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.brandBullet {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.bulletCheck {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-success);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bulletText {
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-inverse) 75%, transparent);
+}
+
+.brandFooter {
+  position: relative;
+  z-index: 1;
+  padding: var(--space-8) var(--space-12);
+  border-top: 1px solid color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-inverse) 45%, transparent);
+}
+
+@media (max-width: 1024px) {
+  .formContainer {
+    padding: var(--space-12) var(--space-10);
+  }
+}
+
+@media (max-width: 900px) {
+  .formSide {
+    flex: 0 0 100%;
+  }
+
+  .brandSide {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .formContainer {
+    padding: var(--space-10) var(--space-6);
+  }
+}

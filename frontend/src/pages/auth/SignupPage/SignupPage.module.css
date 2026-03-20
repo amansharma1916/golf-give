@@ -1,0 +1,312 @@
+.page {
+  max-width: 480px;
+  width: 100%;
+}
+
+.heading {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-2);
+}
+
+.subtext {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-8);
+}
+
+.subtext a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.stepIndicator {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.stepPill {
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: none;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+  min-width: calc(var(--space-16) + var(--space-4));
+}
+
+.stepPillActive {
+  color: var(--color-text-inverse);
+}
+
+.stepPillInactive {
+  background: var(--color-bg-raised);
+  color: var(--color-text-muted);
+}
+
+.stepPillBg {
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+}
+
+.stepPillLabel {
+  position: relative;
+  z-index: 1;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.passwordStrength {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.strengthBars {
+  display: flex;
+  gap: 3px;
+}
+
+.strengthBar {
+  height: 4px;
+  width: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-raised);
+  overflow: hidden;
+}
+
+.strengthBarFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+.strengthLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.termsNote {
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+  text-align: center;
+  margin-top: var(--space-4);
+  line-height: var(--leading-relaxed);
+}
+
+.passwordToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: 0;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0;
+  margin-bottom: var(--space-6);
+  transition: color var(--transition);
+}
+
+.backBtn:hover {
+  color: var(--color-text);
+}
+
+.charityGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.charityOption {
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+  min-height: calc(var(--space-20) + var(--space-8));
+}
+
+.charityOptionSelected {
+  border: 2px solid var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.charityOptionUnselected {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.charityCheckmark {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: var(--space-5);
+  height: var(--space-5);
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+}
+
+.charityName {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.charityMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.charityDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: var(--leading-relaxed);
+}
+
+.browseLink {
+  display: inline-block;
+  margin-bottom: var(--space-6);
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.contributionSection {
+  margin-top: var(--space-2);
+}
+
+.contributionLabel {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.contributionSubtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.contributionDisplay {
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.contributionValue {
+  font-size: var(--text-4xl);
+  font-weight: 800;
+  color: var(--color-accent);
+  display: block;
+  line-height: 1;
+}
+
+.contributionUnit {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.rangeInput {
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  border-radius: var(--radius-full);
+  outline: none;
+  cursor: pointer;
+  margin-bottom: var(--space-4);
+}
+
+.rangeInput::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+.rangeInput::-webkit-slider-thumb {
+  appearance: none;
+  margin-top: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-bg);
+  background: var(--color-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.rangeInput:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--color-accent-subtle), var(--shadow-md);
+}
+
+.rangeInput::-moz-range-track {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+}
+
+.rangeInput::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-bg);
+  background: var(--color-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.rangeInput:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--color-accent-subtle), var(--shadow-md);
+}
+
+.contextNote {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.inlineError {
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  margin-top: calc(var(--space-2) * -1);
+}
+
+@media (max-width: 480px) {
+  .charityGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,34 @@
+.avatar {
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: var(--color-text-inverse);
+}
+
+.sm {
+  width: calc(var(--space-8));
+  height: calc(var(--space-8));
+  font-size: var(--text-xs);
+}
+
+.md {
+  width: var(--space-10);
+  height: var(--space-10);
+  font-size: var(--text-sm);
+}
+
+.lg {
+  width: calc(var(--space-12) + var(--space-2));
+  height: calc(var(--space-12) + var(--space-2));
+  font-size: var(--text-base);
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

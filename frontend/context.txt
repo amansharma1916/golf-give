@@ -1,0 +1,654 @@
+# GitHub Copilot Context — Golf Charity Subscription Platform
+# Project by Digital Heroes | digitalheroes.co.in
+# =====================================================================
+# Save this file as .github/copilot-instructions.md in your repo root.
+# VS Code Copilot will automatically use it as persistent context.
+# =====================================================================
+
+# no comments in the code 
+
+## PROJECT OVERVIEW
+
+This is a full-stack subscription-based web application called the Golf Charity Subscription Platform.
+It combines golf performance tracking, monthly prize draws, and charitable giving.
+The platform is emotion-driven and modern — it must NOT look or feel like a traditional golf website.
+Design leads with charitable impact, not sport.
+
+
+## REPO ARCHITECTURE
+
+Single Git repository with two root-level folders: frontend/ and backend/
+These are two completely independent Node.js projects, each with their own package.json.
+They communicate over HTTP — frontend calls backend REST API endpoints.
+There are no shared folders between them at the repo root level.
+
+golf-charity-platform/         <- repo root
+  frontend/                    <- React 18 app (Vite + TypeScript)
+  backend/                     <- Express.js API (TypeScript)
+  .github/
+    copilot-instructions.md    <- this file
+  .gitignore
+  README.md
+
+
+## TECH STACK
+
+### Frontend (frontend/)
+- Framework:      React 18 + TypeScript (Vite)
+- Styling:        Plain CSS + CSS Modules — NO Tailwind, styled-components allowed , framer motions allowed all other within react is allowed , NO Emotion
+- Animations:     anything within react 
+- Routing:        React Router v6
+- Client state:   Zustand
+- Server state:   TanStack Query (React Query)
+- HTTP client:    Axios (calls backend API)
+- Build tool:     Vite
+
+### Backend (backend/)
+- Framework:      Express.js + TypeScript
+- Runtime:        Node.js 18+
+- Database:       Supabase (Postgres) via supabase-js
+- Auth:           Supabase Auth — JWT validated on every protected route via middleware
+- Payments:       Stripe — SKIPPED FOR DEMO (see PAYMENT DEMO MODE section)
+- Email:          Resend
+- Validation:     Zod (all request bodies validated before any logic runs)
+- Dev server:     ts-node-dev
+
+### Deployment
+- Frontend:       Vercel (new account, not personal)
+- Backend:        Railway or Render (new account, not personal)
+- Database:       Supabase (new project, not personal)
+
+
+## STRICT CODING RULES — APPLIES TO BOTH FRONTEND AND BACKEND
+
+1.  TypeScript everywhere — all files must be .ts or .tsx, strict mode enabled in tsconfig
+2.  Never use 'any' type — use unknown and narrow it, or define a proper interface
+3.  Named exports only from utility and lib files — no default exports except React components
+4.  All environment variables must be validated with zod at startup (env.ts in each project)
+5.  Never log sensitive data (tokens, keys, passwords, PII) to the console
+6.  All async operations must use async/await with try/catch — no unhandled promise rejections
+7.  Input validation with zod on every API endpoint before any business logic runs
+
+
+## STRICT CODING RULES — FRONTEND ONLY
+
+1.  Plain CSS only — use CSS Modules (.module.css) for all component styles
+2.  All design values (colors, spacing, typography, radius, shadows) must use CSS custom
+    properties defined in src/styles/tokens.css — never hardcode hex or pixel values
+3.  No inline styles unless the value is dynamically computed from JS (e.g. width from state)
+4.  Every component folder must contain:
+      ComponentName/
+        index.tsx
+        ComponentName.module.css
+        ComponentName.types.ts
+5.  Never call Supabase directly from the frontend — all data goes through the backend REST API
+6.  Never store JWT tokens in localStorage — use memory (Zustand) only
+7.  Use React Router <Link> for all internal navigation — never use <a href> for internal links
+8.  All API calls must go through src/services/ — never call fetch/axios directly from components
+
+
+## STRICT CODING RULES — BACKEND ONLY
+
+1.  All route definitions must be in src/routes/ — one file per resource
+2.  All business logic must be in src/services/ — controllers only handle req/res parsing
+3.  All Supabase queries must go through src/lib/supabase.ts — never import supabase-js elsewhere
+4.  Auth middleware must run on every protected route — never trust userId from request body
+5.  Never expose Supabase service role key or Stripe secret key in any response
+6.  All responses must follow a consistent shape:
+      Success: { success: true, data: <payload> }
+      Error:   { success: false, error: { message: string, code?: string } }
+7.  HTTP status codes must be accurate — 200, 201, 400, 401, 403, 404, 409, 500
+
+
+## FOLDER STRUCTURE — FRONTEND (frontend/)
+
+frontend/
+  src/
+    assets/                    # Static images, icons, fonts
+    components/
+      ui/                      # Button, Card, Input, Modal, Badge, Spinner,
+                               # Toast, Tabs, Avatar — each in its own folder
+      layout/                  # Navbar, Footer, Sidebar, PageWrapper
+      dashboard/               # ScoreEntry, ScoreList, DrawCard, SubscriptionStatus,
+                               # WinningsOverview, CharityWidget
+      admin/                   # DrawConfig, UserTable, WinnersList, PayoutTracker
+      charity/                 # CharityCard, CharitySearch, DonationSlider
+      draw/                    # DrawTimer, ResultReveal, PrizePoolBreakdown
+    pages/
+      public/                  # HomePage, CharitiesPage, PricingPage, HowItWorksPage
+      auth/                    # LoginPage, SignupPage, ResetPasswordPage
+      dashboard/               # DashboardPage, ScoresPage, CharityPage,
+                               # DrawsPage, WinningsPage, SubscriptionPage
+      admin/                   # AdminUsersPage, AdminDrawsPage, AdminCharitiesPage,
+                               # AdminWinnersPage, AdminReportsPage
+    services/                  # All Axios API call functions — one file per resource
+      auth.service.ts
+      scores.service.ts
+      draws.service.ts
+      charities.service.ts
+      subscriptions.service.ts
+      winners.service.ts
+      admin.service.ts
+    hooks/
+      useAuth.ts
+      useSubscription.ts
+      useScores.ts
+      useDraws.ts
+      useCharities.ts
+    stores/
+      userStore.ts             # Zustand — auth state, user profile
+      drawStore.ts             # Zustand — draw state
+      adminStore.ts            # Zustand — admin UI state
+    styles/
+      tokens.css               # ALL CSS custom properties — imported first in main.tsx
+      reset.css
+      typography.css
+      animations.css           # All @keyframes defined here, reused via class names
+    types/
+      index.ts                 # All shared TypeScript interfaces
+      api.types.ts             # API request/response shapes
+    lib/
+      axios.ts                 # Axios instance — baseURL + auth interceptor (attaches JWT)
+      env.ts                   # Zod-validated environment variables
+      constants.ts
+      utils.ts
+    router/
+      index.tsx                # React Router v6 route definitions
+      ProtectedRoute.tsx       # Redirects unauthenticated users to /login
+      SubscriberRoute.tsx      # Redirects users without active subscription to /pricing
+      AdminRoute.tsx           # Redirects non-admin users to /dashboard
+    App.tsx
+    main.tsx                   # Imports tokens.css, reset.css, then mounts App
+  public/
+  index.html
+  vite.config.ts
+  tsconfig.json
+  package.json
+  .env
+  .env.example
+
+
+## FOLDER STRUCTURE — BACKEND (backend/)
+
+backend/
+  src/
+    routes/                    # Express routers — one file per resource
+      auth.routes.ts
+      scores.routes.ts
+      draws.routes.ts
+      charities.routes.ts
+      subscriptions.routes.ts
+      winners.routes.ts
+      admin.routes.ts
+      webhooks.routes.ts       # Stripe webhook (stub for now)
+    controllers/               # Thin req/res handlers — call services, return responses
+      auth.controller.ts
+      scores.controller.ts
+      draws.controller.ts
+      charities.controller.ts
+      subscriptions.controller.ts
+      winners.controller.ts
+      admin.controller.ts
+    services/                  # All business logic lives here
+      auth.service.ts
+      scores.service.ts
+      draws.service.ts
+      charities.service.ts
+      subscriptions.service.ts
+      winners.service.ts
+      admin.service.ts
+      email.service.ts
+    lib/
+      supabase.ts              # Single Supabase client (service role) — import only from here
+      stripe/
+        client.ts              # getStripeClient() — returns null when PAYMENT_MODE=demo
+        plans.ts               # PLANS constant with amounts and stripePriceId stubs
+        webhooks.ts            # Stub — handles Stripe events when going live
+      env.ts                   # Zod-validated environment variables
+      constants.ts
+      utils.ts
+    middleware/
+      auth.middleware.ts       # Decodes + verifies Supabase JWT, attaches req.user
+      subscription.middleware.ts  # Checks subscription status = 'active'
+      admin.middleware.ts      # Checks req.user.is_admin = true
+      errorHandler.middleware.ts  # Global Express error handler
+      validate.middleware.ts   # Zod schema validation factory function
+    draw-engine/               # Pure functions — no DB calls, fully unit testable
+      random.ts                # 5 unique random integers between 1 and 45
+      algorithm.ts             # Weighted draw based on score frequency across subscribers
+      simulate.ts              # Preview draw results without persisting to DB
+      prize.ts                 # Prize pool calculation and jackpot rollover logic
+    validators/                # Zod schemas for all request bodies
+      scores.validators.ts
+      draws.validators.ts
+      charities.validators.ts
+      subscriptions.validators.ts
+      winners.validators.ts
+    types/
+      index.ts                 # All shared TypeScript interfaces
+      express.d.ts             # Augments Express Request: req.user typed
+    app.ts                     # Express app — registers middleware, routes, error handler
+    server.ts                  # Entry point — createServer, listen
+  supabase/
+    migrations/                # 001_users, 002_subscriptions, 003_scores,
+                               # 004_draws, 005_prizes, 006_charities, 007_payouts
+    seed.sql
+    policies.sql               # Supabase RLS policies
+  tests/
+    unit/
+      draw-engine/
+      score-logic/
+      prize-calc/
+    integration/
+      auth/
+      subscriptions/
+      scores/
+  tsconfig.json
+  package.json
+  nodemon.json
+  .env
+  .env.example
+
+
+## API DESIGN
+
+Base URL
+  Development:  http://localhost:4000/api
+  Production:   https://your-backend.railway.app/api
+
+Frontend Axios instance (frontend/src/lib/axios.ts) sets baseURL from VITE_API_BASE_URL.
+A request interceptor automatically attaches Authorization: Bearer <supabaseJwt> on every call.
+
+### Auth
+  POST   /api/auth/register          Create user profile row after Supabase signup
+  GET    /api/auth/me                Return current user profile + subscription status
+
+### Subscriptions
+  GET    /api/subscriptions/status         Get current user's subscription row
+  POST   /api/subscriptions/mock-checkout  Demo: instantly activate subscription
+  POST   /api/subscriptions/mock-cancel    Demo: cancel subscription
+  POST   /api/subscriptions/checkout       Real Stripe Checkout — stub, implement later
+  POST   /api/webhooks/stripe              Stripe webhook — stub, implement later
+
+### Scores
+  GET    /api/scores                 Get user's scores (max 5, newest first)
+  POST   /api/scores                 Add score (enforces 5-score rolling rule server-side)
+  PUT    /api/scores/:id             Edit a score
+  DELETE /api/scores/:id             Delete a score
+
+### Draws
+  GET    /api/draws                  List all published draws
+  GET    /api/draws/upcoming         Next scheduled draw info
+  GET    /api/draws/:id              Draw details + prize pool breakdown
+  POST   /api/draws/simulate         Admin: preview draw without persisting
+  POST   /api/draws/:id/publish      Admin: publish official draw results
+  PUT    /api/draws/:id/configure    Admin: set draw type (random | algorithmic)
+
+### Charities
+  GET    /api/charities              List all active charities (search + filter)
+  GET    /api/charities/featured     Featured charities for homepage
+  GET    /api/charities/:id          Single charity profile
+  POST   /api/charities              Admin: create charity
+  PUT    /api/charities/:id          Admin: update charity
+  DELETE /api/charities/:id          Admin: soft delete charity
+
+### Winners
+  GET    /api/winners/me             Current user's winnings history
+  POST   /api/winners/:id/upload-proof    Upload verification screenshot
+  GET    /api/winners                Admin: all winners with payout status
+  POST   /api/winners/:id/verify     Admin: approve or reject proof
+  POST   /api/winners/:id/mark-paid  Admin: mark payout as completed
+
+### Admin
+  GET    /api/admin/users            All users with subscription status
+  PUT    /api/admin/users/:id        Edit user profile or scores
+  GET    /api/admin/reports          Totals: users, prize pool, charity contributions, stats
+
+
+## DATABASE SCHEMA (Supabase Postgres)
+
+Table: users
+  id uuid PK (references auth.users)
+  email text NOT NULL
+  full_name text
+  is_admin boolean DEFAULT false
+  created_at timestamptz DEFAULT now()
+
+Table: subscriptions
+  id uuid PK
+  user_id uuid FK -> users.id
+  stripe_customer_id text           -- 'demo_customer_<userId>' in demo mode
+  stripe_subscription_id text       -- 'demo_sub_<userId>_<timestamp>' in demo mode
+  plan text CHECK (plan IN ('monthly', 'yearly'))
+  status text CHECK (status IN ('active', 'inactive', 'cancelled', 'lapsed'))
+  current_period_end timestamptz
+  created_at timestamptz DEFAULT now()
+
+Table: scores
+  id uuid PK
+  user_id uuid FK -> users.id
+  score integer CHECK (score >= 1 AND score <= 45)   -- Stableford format
+  played_at date NOT NULL
+  created_at timestamptz DEFAULT now()
+  -- MAX 5 per user. Oldest deleted on insert of 6th. Enforced in scores.service.ts.
+
+Table: charities
+  id uuid PK
+  name text NOT NULL
+  description text
+  image_url text
+  website_url text
+  is_featured boolean DEFAULT false
+  is_active boolean DEFAULT true
+  created_at timestamptz DEFAULT now()
+
+Table: charity_contributions
+  id uuid PK
+  user_id uuid FK -> users.id
+  charity_id uuid FK -> charities.id
+  percentage integer DEFAULT 10 CHECK (percentage >= 10 AND percentage <= 100)
+  created_at timestamptz DEFAULT now()
+
+Table: draws
+  id uuid PK
+  month date NOT NULL
+  status text CHECK (status IN ('pending', 'simulated', 'published'))
+  draw_type text CHECK (draw_type IN ('random', 'algorithmic'))
+  winning_numbers integer[]
+  jackpot_amount numeric DEFAULT 0
+  rolled_over_amount numeric DEFAULT 0
+  created_at timestamptz DEFAULT now()
+
+Table: draw_entries
+  id uuid PK
+  draw_id uuid FK -> draws.id
+  user_id uuid FK -> users.id
+  score_snapshot integer[]      -- copy of user's 5 scores at draw time
+  match_count integer           -- 3, 4, or 5
+  is_winner boolean DEFAULT false
+
+Table: prize_pools
+  id uuid PK
+  draw_id uuid FK -> draws.id
+  tier text CHECK (tier IN ('five_match', 'four_match', 'three_match'))
+  pool_percentage numeric        -- 40, 35, 25
+  total_pool numeric
+  winner_count integer DEFAULT 0
+  prize_per_winner numeric
+  rolled_over boolean DEFAULT false
+
+Table: payouts
+  id uuid PK
+  draw_entry_id uuid FK -> draw_entries.id
+  user_id uuid FK -> users.id
+  amount numeric
+  status text CHECK (status IN ('pending', 'verified', 'paid'))
+  proof_url text
+  admin_note text
+  created_at timestamptz DEFAULT now()
+
+
+## USER ROLES & ROUTE PROTECTION
+
+1. Public Visitor   — no auth. Routes: /, /charities, /pricing, /how-it-works
+2. Subscriber       — authenticated + subscription.status = 'active'
+                      Routes: /dashboard/*, all /api/* user endpoints
+3. Admin            — authenticated + users.is_admin = true
+                      Routes: /admin/*, all /api/admin/* endpoints
+
+Frontend guards (in router/):
+  <ProtectedRoute>       checks Zustand userStore for valid JWT → else /login
+  <SubscriberRoute>      checks subscription status = 'active' → else /pricing
+  <AdminRoute>           checks user.is_admin = true → else /dashboard
+
+Backend middleware chain:
+  Protected user routes: auth.middleware → subscription.middleware → controller
+  Admin routes:          auth.middleware → admin.middleware → controller
+  Public routes:         no middleware
+
+Auth middleware decodes Supabase JWT from Authorization: Bearer <token>,
+verifies with Supabase, attaches typed user to req.user.
+Never trust a userId sent in the request body.
+
+
+## PAYMENT DEMO MODE (Stripe skipped — integration-ready)
+
+Payment is MOCKED for demo. Stripe is NOT integrated yet.
+All code must be structured so Stripe can be plugged in later without restructuring.
+
+Demo subscribe flow:
+  1. User on /pricing clicks a plan
+  2. Redirect to /subscribe?plan=monthly (or yearly)
+  3. Page shows plan name, price, and a single "Confirm Subscription" button — no card fields
+  4. Click → POST /api/subscriptions/mock-checkout { plan }
+     userId comes from req.user (auth middleware) — never from request body
+  5. Backend writes subscriptions row:
+       status = 'active'
+       plan = 'monthly' | 'yearly'
+       stripe_customer_id = 'demo_customer_<userId>'
+       stripe_subscription_id = 'demo_sub_<userId>_<Date.now()>'
+       current_period_end = now() + 30 days (monthly) or 365 days (yearly)
+  6. Frontend receives { success: true } → redirect to /dashboard
+
+Demo cancel flow:
+  POST /api/subscriptions/mock-cancel
+  → sets status = 'cancelled'
+  → subscription.middleware blocks access on next request
+
+Future-proof Stripe stubs (keep these files — never delete them):
+  backend/src/lib/stripe/client.ts    getStripeClient() returns null when PAYMENT_MODE=demo
+  backend/src/lib/stripe/plans.ts     PLANS constant with stripePriceId fields (fill in at go-live)
+  backend/src/lib/stripe/webhooks.ts  stub for customer.subscription.* and invoice.* events
+  backend/src/routes/webhooks.routes.ts  POST /api/webhooks/stripe — stub
+
+To go live: set PAYMENT_MODE=live, fill in stripePriceId, implement checkout + webhook handler.
+Nothing else changes.
+
+PLANS constant shape (backend/src/lib/stripe/plans.ts):
+  export const PLANS = {
+    monthly: {
+      id: 'monthly',
+      label: 'Monthly',
+      priceDisplay: '£9.99 / month',
+      amount: 999,
+      currency: 'gbp',
+      interval: 'month',
+      stripePriceId: '',     // fill in at go-live
+    },
+    yearly: {
+      id: 'yearly',
+      label: 'Yearly',
+      priceDisplay: '£89.99 / year',
+      amount: 8999,
+      currency: 'gbp',
+      interval: 'year',
+      stripePriceId: '',     // fill in at go-live
+    },
+  } as const;
+  export type PlanId = keyof typeof PLANS;
+
+
+## SCORE ENTRY RULES
+
+- Stableford format — integer 1 to 45 inclusive
+- Each score must include a played_at date
+- Maximum 5 scores stored per user at any time
+- When a 6th score is added, the oldest (by played_at) is deleted automatically
+- Rolling rule enforced in backend scores.service.ts — never frontend only
+- Scores returned newest first (ORDER BY played_at DESC)
+
+
+## DRAW ENGINE (backend/src/draw-engine/)
+
+random.ts     — 5 unique random integers between 1 and 45
+algorithm.ts  — weighted draw based on score frequency across all active subscribers
+               (configurable: favour most frequent OR least frequent numbers)
+simulate.ts   — run draw logic, return preview results, do NOT write to DB
+prize.ts      — calculate prize pool from active subscriber count at draw time
+               Split: five_match=40%, four_match=35%, three_match=25%
+               No five_match winner → rolled_over_amount carries to next draw
+               Multiple winners in same tier → prize split equally
+               All functions must be pure — no DB calls, no side effects
+
+
+## CHARITY SYSTEM
+
+- User selects one charity at signup (stored in charity_contributions)
+- Default contribution: 10% of subscription fee
+- User can increase percentage up to 100%
+- Independent donation option not tied to subscription
+- Directory supports text search and filter
+- Individual profile: description, image, upcoming golf day events
+- Featured charities shown on homepage via GET /api/charities/featured
+
+
+## WINNER VERIFICATION FLOW
+
+1. Draw published → draw_entries created → payouts rows created (status = 'pending')
+2. Winner receives email via Resend
+3. Winner uploads screenshot → POST /api/winners/:id/upload-proof
+   File stored in Supabase Storage bucket 'winner-proofs', URL saved in payouts.proof_url
+4. Admin reviews → POST /api/winners/:id/verify { approved: true | false }
+5. Approved → status = 'verified'
+6. Admin marks payment sent → POST /api/winners/:id/mark-paid → status = 'paid'
+
+
+## CSS TOKENS (frontend/src/styles/tokens.css) — USE IN EVERY MODULE CSS FILE
+
+:root {
+  --color-primary:        #1a1a2e;
+  --color-accent:         #e94560;
+  --color-accent-hover:   #c73652;
+  --color-accent-subtle:  #fde8ec;
+  --color-bg:             #ffffff;
+  --color-bg-surface:     #f8f8f8;
+  --color-bg-raised:      #f0f0f0;
+  --color-text:           #111111;
+  --color-text-muted:     #6b6b6b;
+  --color-text-subtle:    #9a9a9a;
+  --color-text-inverse:   #ffffff;
+  --color-border:         #e0e0e0;
+  --color-border-strong:  #c0c0c0;
+  --color-success:        #22c55e;
+  --color-warning:        #f59e0b;
+  --color-error:          #ef4444;
+  --color-info:           #3b82f6;
+  --space-1:4px;  --space-2:8px;   --space-3:12px;  --space-4:16px;
+  --space-5:20px; --space-6:24px;  --space-8:32px;  --space-10:40px;
+  --space-12:48px;--space-16:64px; --space-20:80px; --space-24:96px;
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+  --text-xs:0.75rem; --text-sm:0.875rem; --text-base:1rem;
+  --text-lg:1.125rem;--text-xl:1.25rem;  --text-2xl:1.5rem;
+  --text-3xl:1.875rem;--text-4xl:2.25rem;--text-5xl:3rem;
+  --leading-tight:1.25;--leading-normal:1.5;--leading-relaxed:1.75;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:16px;
+  --radius-xl:24px;--radius-full:9999px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.12);
+  --transition-fast:120ms ease;--transition:180ms ease;--transition-slow:320ms ease;
+  --max-width:1200px;--sidebar-width:260px;
+}
+[data-theme="dark"] {
+  --color-bg:#0f0f17;--color-bg-surface:#1a1a28;--color-bg-raised:#22223a;
+  --color-text:#f0f0f0;--color-text-muted:#9a9ab0;--color-text-subtle:#6a6a80;
+  --color-border:#2a2a3a;--color-border-strong:#3a3a50;
+}
+
+
+## UI/UX PRINCIPLES
+
+- Emotion-first — lead with charity impact and community wins, not golf statistics
+- Do NOT use golf clichés (no fairway greens, no plaid, no club imagery as hero visual)
+- Clean, modern, spacious — generous whitespace, bold typography
+- Mobile-first — test at 375px, 768px, 1280px
+- Subtle CSS animations only
+- Subscribe CTA must be prominent on every key page
+- Homepage must clearly communicate: what you do, how you win, charity impact, and CTA
+
+
+## WHAT COPILOT SHOULD ALWAYS DO
+
+Frontend:
+  - Generate components with TypeScript interfaces (never 'any')
+  - Generate .module.css companion using only CSS tokens
+  - Use React Router <Link> for all internal navigation
+  - Call backend only through src/services/ functions
+  - Use TanStack Query for all data fetching
+  - Use Zustand for auth and UI state
+
+Backend:
+  - Validate every request body with zod before any logic
+  - Return consistent { success, data } or { success, error } shapes
+  - Apply auth middleware to every non-public route
+  - Keep business logic in services/ — keep controllers thin
+  - Keep draw-engine/ functions pure — no DB calls inside them
+
+
+## WHAT COPILOT MUST NEVER DO
+
+  - Never use Tailwind classes
+  - Never hardcode colors, spacing, or font sizes — always use CSS tokens
+  - Never write .js or .jsx files — TypeScript only
+  - Never use 'any' type
+  - Never call Supabase from the frontend — all data goes through the backend API
+  - Never trust userId from request body — always use req.user from auth middleware
+  - Never call real Stripe API when PAYMENT_MODE=demo
+  - Never delete backend/src/lib/stripe/ — keep stubs ready for live integration
+  - Never store JWT in localStorage
+  - Never allow wildcard CORS (*) in backend — whitelist FRONTEND_URL only
+
+
+## ENVIRONMENT VARIABLES
+
+frontend/.env
+  VITE_API_BASE_URL=http://localhost:4000/api
+  VITE_PAYMENT_MODE=demo
+  VITE_SUPABASE_URL=
+  VITE_SUPABASE_ANON_KEY=
+
+backend/.env
+  PORT=4000
+  PAYMENT_MODE=demo
+  SUPABASE_URL=
+  SUPABASE_ANON_KEY=
+  SUPABASE_SERVICE_ROLE_KEY=        # server only — never expose to frontend
+  STRIPE_SECRET_KEY=                # server only — never expose to frontend
+  STRIPE_WEBHOOK_SECRET=
+  RESEND_API_KEY=
+  FRONTEND_URL=http://localhost:5173
+
+
+## BUILD AND RUN
+
+  # Terminal 1 — backend (port 4000)
+  cd backend && npm install && npm run dev
+
+  # Terminal 2 — frontend (port 5173)
+  cd frontend && npm install && npm run dev
+
+  # Production builds
+  cd frontend && npm run build      # dist/ -> deploy to Vercel
+  cd backend  && npm run build      # dist/ -> deploy to Railway or Render
+
+  # Database
+  cd backend && npx supabase db push
+
+  # Tests
+  cd backend && npm run test        # Vitest unit tests
+  cd backend && npm run test:int    # Integration tests
+
+
+## NOTES FOR COPILOT
+
+  - Draw engine is the most critical part — keep all functions pure and fully unit tested
+  - 5-score rolling rule must be enforced in backend scores.service.ts, not on the frontend
+  - Auth middleware must verify the Supabase JWT on every single protected request
+  - Subscription status must be re-checked per request via middleware — not cached in JWT
+  - Jackpot rollover: store rolled_over_amount on the draw record, add it to next draw's
+    five_match pool total at prize calculation time
+  - Winner proof files go to Supabase Storage bucket 'winner-proofs' — store only the URL in DB
+  - CORS in backend app.ts must whitelist FRONTEND_URL from env — never use wildcard *
+  - frontend/src/lib/axios.ts must attach Supabase session token as Authorization: Bearer
+    on every request via a request interceptor

@@ -1,0 +1,489 @@
+.pageHero {
+  min-height: calc(var(--space-24) + var(--space-24) + var(--space-24));
+  background: var(--color-primary);
+  padding: var(--space-24) var(--space-6) var(--space-20);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageHeroBg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% -10%,
+    color-mix(in srgb, var(--color-accent) 12%, transparent) 0%,
+    transparent 60%
+  );
+}
+
+.pageHeroInner {
+  position: relative;
+  z-index: 1;
+  max-width: calc(var(--space-24) * 5.6);
+}
+
+.pageHeroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-accent);
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.pageHeroTitle {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 800;
+  color: var(--color-text-inverse);
+  letter-spacing: -0.03em;
+  margin: var(--space-4) 0;
+}
+
+.pageHeroSubtitle {
+  font-size: var(--text-lg);
+  color: color-mix(in srgb, var(--color-text-inverse) 60%, transparent);
+  max-width: calc(var(--space-20) * 6.5);
+  margin: 0 auto;
+  line-height: var(--leading-relaxed);
+}
+
+.plansSection {
+  padding: var(--space-20) var(--space-6);
+  background: var(--color-bg-surface);
+}
+
+.plansInner {
+  max-width: calc(var(--space-24) * 9);
+  margin: 0 auto;
+}
+
+.toggleWrapper {
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+.toggle {
+  display: inline-flex;
+  background: var(--color-bg-raised);
+  border-radius: var(--radius-full);
+  padding: var(--space-1);
+  position: relative;
+}
+
+.toggleOption {
+  padding: var(--space-2) var(--space-6);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--radius-full);
+  position: relative;
+  z-index: 1;
+  border: none;
+  background: none;
+  transition: color var(--transition);
+  min-width: calc(var(--space-24) * 1.45);
+}
+
+.toggleText {
+  position: relative;
+  z-index: 2;
+}
+
+.toggleActive {
+  color: var(--color-text-inverse);
+}
+
+.toggleInactive {
+  color: var(--color-text-muted);
+}
+
+.toggleSlider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  z-index: 1;
+}
+
+.savingBadge {
+  display: inline-block;
+  background: color-mix(in srgb, var(--color-success) 18%, var(--color-bg));
+  color: color-mix(in srgb, var(--color-success) 72%, var(--color-text));
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.planCard {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  position: relative;
+  transition: var(--transition);
+  overflow: visible;
+  border: 1px solid var(--color-border);
+}
+
+.selectedPlanBorder {
+  position: absolute;
+  inset: 0;
+  border: calc(var(--space-1) / 2) solid var(--color-accent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.planCardHighlighted {
+  box-shadow: var(--shadow-md);
+}
+
+.popularBadge {
+  position: absolute;
+  top: calc(var(--space-4) * -1 + var(--space-1) / 2);
+  right: var(--space-6);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: var(--space-1) var(--space-3);
+}
+
+.planName {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.planAmount {
+  font-size: clamp(var(--text-4xl), 6vw, calc(var(--text-5xl) + var(--text-lg)));
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.planInterval {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+}
+
+.planSaving {
+  font-size: var(--text-sm);
+  color: var(--color-success);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+}
+
+.planDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.planDivider {
+  height: calc(var(--space-1) / 4);
+  background: var(--color-border);
+  margin-bottom: var(--space-6);
+}
+
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+  padding: 0;
+  list-style: none;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.featureCheck {
+  width: calc(var(--space-4) + var(--space-1) / 2);
+  height: calc(var(--space-4) + var(--space-1) / 2);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-success) 18%, var(--color-bg));
+  color: color-mix(in srgb, var(--color-success) 72%, var(--color-text));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.prizeTiers {
+  padding: var(--space-20) var(--space-6);
+  background: var(--color-bg);
+}
+
+.prizeInner {
+  max-width: calc(var(--space-24) * 6.8);
+  margin: 0 auto;
+}
+
+.sectionHeader {
+  text-align: center;
+}
+
+.sectionEyebrow {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-3);
+}
+
+.sectionHeading {
+  font-size: var(--text-4xl);
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-4);
+}
+
+.sectionSubtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  max-width: calc(var(--space-20) * 6);
+  margin: 0 auto;
+}
+
+.tierRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-10);
+}
+
+.tierRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  gap: var(--space-3);
+}
+
+.tierLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.tierDot {
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.tierName {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.tierMatch {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+.tierPctBadge {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.rolloverNote {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  border-left: var(--space-1) solid var(--color-info);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+.trust {
+  padding: var(--space-16) var(--space-6);
+  background: var(--color-bg-surface);
+}
+
+.trustInner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-6);
+}
+
+.trustItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.trustIcon {
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: var(--text-base);
+}
+
+.trustLabel {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.trustDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+.finalCta {
+  padding: var(--space-24) var(--space-6);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    color-mix(in srgb, var(--color-primary) 86%, var(--color-info) 14%) 50%,
+    color-mix(in srgb, var(--color-primary) 72%, var(--color-info) 28%) 100%
+  );
+  text-align: center;
+}
+
+.finalCtaInner {
+  max-width: calc(var(--space-20) * 8);
+  margin: 0 auto;
+}
+
+.finalCtaHeading {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  color: var(--color-text-inverse);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-4);
+}
+
+.finalCtaSubtitle {
+  font-size: var(--text-lg);
+  color: color-mix(in srgb, var(--color-text-inverse) 65%, transparent);
+  margin-bottom: var(--space-8);
+  line-height: var(--leading-relaxed);
+}
+
+.finalCtaButtons {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ghostWhite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--color-text-inverse) 35%, transparent);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.ghostWhite:hover {
+  border-color: var(--color-text-inverse);
+  background: color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+}
+
+@media (max-width: 1024px) {
+  .trustGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .sectionHeading {
+    font-size: var(--text-3xl);
+  }
+
+  .toggleOption {
+    min-width: calc(var(--space-24) * 1.2);
+  }
+}
+
+@media (max-width: 640px) {
+  .plansGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .trustGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ghostWhite {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .trustGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pageHero {
+    padding: var(--space-20) var(--space-4) var(--space-16);
+  }
+
+  .toggleOption {
+    min-width: calc(var(--space-24));
+    padding: var(--space-2) var(--space-4);
+  }
+}

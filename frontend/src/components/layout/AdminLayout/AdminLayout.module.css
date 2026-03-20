@@ -1,0 +1,148 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg-surface);
+}
+
+.sidebarDesktop {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebarMobileOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 150;
+  border: none;
+}
+
+.sidebarMobileDrawer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-border);
+  z-index: 160;
+  overflow-y: auto;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  height: 64px;
+  background: var(--color-primary);
+  border-bottom: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.adminBadge {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(233, 69, 96, 0.15);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.pageTitle {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-text-inverse);
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.iconButton {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: var(--color-text-inverse);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.userMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.userName {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-inverse);
+}
+
+.content {
+  padding: var(--space-8) var(--space-6);
+  flex: 1;
+}
+
+.hamburger {
+  display: none;
+  border: none;
+  background: transparent;
+  color: var(--color-text-inverse);
+  padding: var(--space-2);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .sidebarDesktop {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .content {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .userName {
+    display: none;
+  }
+
+  .adminBadge {
+    display: none;
+  }
+}
