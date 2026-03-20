@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Avatar } from '../../ui';
 import { Sidebar } from '../Sidebar';
 import { useLocation } from 'react-router-dom';
-import { drawerVariants, fadeInVariants, pageTransition, pageVariants } from '../../../lib/animations';
+import { drawerVariants, fadeInVariants } from '../../../lib/animations';
 import { useUserStore } from '../../../stores/userStore';
 import styles from './DashboardLayout.module.css';
 import type { DashboardLayoutProps } from './DashboardLayout.types';
@@ -44,73 +44,64 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const pageTitle = useMemo(() => pageTitles[location.pathname] ?? 'Dashboard', [location.pathname]);
 
   return (
-    <div className={styles.layout}>
-      <div className={styles.sidebarDesktop}>
-        <Sidebar />
-      </div>
+    <MotionConfig reducedMotion="always" transition={{ duration: 0 }}>
+      <div className={styles.layout}>
+        <div className={styles.sidebarDesktop}>
+          <Sidebar />
+        </div>
 
-      <AnimatePresence>
-        {isSidebarOpen ? (
-          <>
-            <motion.button
-              type="button"
-              className={styles.sidebarMobileOverlay}
-              onClick={() => setIsSidebarOpen(false)}
-              variants={fadeInVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              aria-label="Close sidebar"
-            />
-            <motion.div
-              className={styles.sidebarMobileDrawer}
-              variants={drawerVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-            >
-              <Sidebar onClose={() => setIsSidebarOpen(false)} />
-            </motion.div>
-          </>
-        ) : null}
-      </AnimatePresence>
+        <AnimatePresence>
+          {isSidebarOpen ? (
+            <>
+              <motion.button
+                type="button"
+                className={styles.sidebarMobileOverlay}
+                onClick={() => setIsSidebarOpen(false)}
+                variants={fadeInVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                aria-label="Close sidebar"
+              />
+              <motion.div
+                className={styles.sidebarMobileDrawer}
+                variants={drawerVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <Sidebar onClose={() => setIsSidebarOpen(false)} />
+              </motion.div>
+            </>
+          ) : null}
+        </AnimatePresence>
 
-      <div className={styles.main}>
-        <header className={styles.topbar}>
-          <div className={styles.topbarLeft}>
-            <button type="button" className={styles.hamburger} onClick={() => setIsSidebarOpen(true)} aria-label="Open sidebar">
-              <MenuIcon />
-            </button>
-            <h1 className={styles.pageTitle}>{pageTitle}</h1>
-          </div>
-
-          <div className={styles.topbarRight}>
-            <span className={styles.subscriptionStatus}>{subscription?.status ?? 'inactive'}</span>
-            <button type="button" className={styles.iconButton} aria-label="Notifications">
-              <BellIcon />
-            </button>
-            <div className={styles.userMeta}>
-              <Avatar name={user?.fullName ?? 'Guest'} size="sm" />
-              <span className={styles.userName}>{user?.fullName ?? 'Guest'}</span>
+        <div className={styles.main}>
+          <header className={styles.topbar}>
+            <div className={styles.topbarLeft}>
+              <button type="button" className={styles.hamburger} onClick={() => setIsSidebarOpen(true)} aria-label="Open sidebar">
+                <MenuIcon />
+              </button>
+              <h1 className={styles.pageTitle}>{pageTitle}</h1>
             </div>
-          </div>
-        </header>
 
-        <main className={styles.content}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={pageTransition}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        </main>
+            <div className={styles.topbarRight}>
+              <span className={styles.subscriptionStatus}>{subscription?.status ?? 'inactive'}</span>
+              <button type="button" className={styles.iconButton} aria-label="Notifications">
+                <BellIcon />
+              </button>
+              <div className={styles.userMeta}>
+                <Avatar name={user?.fullName ?? 'Guest'} size="sm" />
+                <span className={styles.userName}>{user?.fullName ?? 'Guest'}</span>
+              </div>
+            </div>
+          </header>
+
+          <main className={styles.content}>
+            <div>{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
+    </MotionConfig>
   );
 };

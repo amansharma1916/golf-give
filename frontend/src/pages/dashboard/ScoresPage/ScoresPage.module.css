@@ -1,0 +1,560 @@
+.container {
+  padding: var(--space-8) 0;
+}
+
+/* SECTION 1: Score Slots */
+.slotsSection {
+  margin-bottom: var(--space-8);
+}
+
+.slotsLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-5);
+}
+
+.slots {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.slotWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.slotConnector {
+  flex: 1;
+  height: 2px;
+  background: var(--color-border);
+  margin-top: 28px;
+  min-width: 8px;
+  max-width: 16px;
+}
+
+.slot {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--text-base);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.slotEmpty {
+  background: var(--color-bg-raised);
+  border: 2px dashed var(--color-border);
+  color: var(--color-text-subtle);
+  transition: var(--transition);
+}
+
+.slotEmpty:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.slotDate {
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+  text-align: center;
+  max-width: 64px;
+  word-break: break-word;
+}
+
+.slotOldestBadge {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  background: var(--color-bg-raised);
+  border-radius: var(--radius-full);
+  padding: 1px var(--space-2);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* SECTION 2: Add Score Form */
+.addForm {
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: 0 0 0 4px var(--color-accent-subtle);
+  background: var(--color-bg);
+  overflow: hidden;
+  margin-bottom: var(--space-8);
+}
+
+.addFormHeading {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.addFormSub {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.rollingWarning {
+  background: #fffbeb;
+  border: 1px solid #fef08a;
+  border-left: 3px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-sm);
+  color: #a16207;
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.formFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.scoreInputWrapper {
+  position: relative;
+}
+
+.scorePreview {
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.previewBall {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--text-xs);
+  box-shadow: var(--shadow-md);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+/* SECTION 3: Scores List */
+.listSection {
+  margin-bottom: var(--space-8);
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.listTitle {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.scoresList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.scoreItem {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.scoreItem:hover {
+  border-color: var(--color-border);
+}
+
+.scoreItemEditing {
+  border: 2px solid var(--color-info);
+  box-shadow: 0 0 0 3px #dbeafe;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.scoreBall {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+}
+
+.scoreMiddle {
+  flex: 1;
+  min-width: 0;
+}
+
+.scoreTopRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.scoreValue {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.scoreQuality {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.scoreBottomRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.scoreDate {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.scoreFormat {
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+}
+
+.latestBadge {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 2px var(--space-2);
+}
+
+.oldestBadge {
+  background: #fef9c3;
+  color: #a16207;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 2px var(--space-2);
+}
+
+.scoreActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.actionBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  transition: var(--transition);
+  font-size: 14px;
+}
+
+.actionBtnEdit:hover {
+  background: var(--color-bg-surface);
+  color: var(--color-text);
+}
+
+.actionBtnDelete:hover {
+  background: #fee2e2;
+  color: var(--color-error);
+}
+
+.inlineEditForm {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-3);
+  width: 100%;
+}
+
+.inlineFormFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.inlineFormActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: var(--space-16) var(--space-6);
+}
+
+.emptyIcon {
+  margin: 0 auto var(--space-6);
+}
+
+.emptyTitle {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+
+.emptyDesc {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: var(--leading-relaxed);
+}
+
+/* SECTION 5: Info Section */
+.infoSection {
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-6);
+}
+
+.infoToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-accent);
+  transition: var(--transition);
+}
+
+.infoToggle:hover {
+  opacity: 0.8;
+}
+
+.infoContent {
+  overflow: hidden;
+}
+
+.infoRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-5);
+}
+
+.infoRow {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.infoIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.infoTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.infoDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* RESPONSIVE: 580px */
+@media (max-width: 580px) {
+  .formFields {
+    grid-template-columns: 1fr;
+  }
+
+  .inlineFormFields {
+    grid-template-columns: 1fr;
+  }
+
+  .listHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .scoreItem {
+    flex-wrap: wrap;
+  }
+
+  .scoreActions {
+    width: 100%;
+    margin-top: var(--space-3);
+  }
+}
+
+/* RESPONSIVE: 480px */
+@media (max-width: 480px) {
+  .slot {
+    width: 44px;
+    height: 44px;
+    font-size: var(--text-sm);
+  }
+
+  .slotConnector {
+    max-width: 12px;
+  }
+
+  .container {
+    padding: var(--space-6) 0;
+  }
+
+  .addForm {
+    padding: var(--space-4);
+  }
+
+  .scoreItem {
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .scoreBall {
+    width: 44px;
+    height: 44px;
+    font-size: var(--text-base);
+  }
+
+  .scoreItemEditing {
+    padding-top: var(--space-3);
+  }
+
+  .infoRow {
+    gap: var(--space-3);
+  }
+
+  .infoIcon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .emptyState {
+    padding: var(--space-12) var(--space-4);
+  }
+}
+
+/* RESPONSIVE: 380px */
+@media (max-width: 380px) {
+  .slot {
+    width: 36px;
+    height: 36px;
+    font-size: var(--text-xs);
+  }
+
+  .slotDate {
+    font-size: 9px;
+    max-width: 48px;
+  }
+
+  .slotWrapper {
+    gap: var(--space-1);
+  }
+
+  .slots {
+    gap: 0;
+  }
+
+  .slotConnector {
+    max-width: 8px;
+    min-width: 4px;
+  }
+
+  .scoreTopRow {
+    gap: var(--space-2);
+  }
+
+  .scoreBottomRow {
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+  }
+
+  .scoreValue {
+    font-size: var(--text-base);
+  }
+
+  .scoreBall {
+    width: 40px;
+    height: 40px;
+    font-size: var(--text-sm);
+  }
+
+  .addForm {
+    padding: var(--space-4);
+  }
+
+  .formActions {
+    gap: var(--space-2);
+  }
+
+  .latestBadge,
+  .oldestBadge {
+    font-size: 9px;
+    padding: 1px var(--space-1);
+  }
+}

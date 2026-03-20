@@ -12,22 +12,21 @@ import { CharityProfilePage } from '../pages/public/CharityProfilePage';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { SignupPage } from '../pages/auth/SignupPage';
+import { SubscribePage } from '../pages/auth/SubscribePage';
+import { DashboardHomePage } from '../pages/dashboard/DashboardHomePage';
+import { ScoresPage } from '../pages/dashboard/ScoresPage';
+import { DrawsPage } from '../pages/dashboard/DrawsPage';
+import { WinningsPage } from '../pages/dashboard/WinningsPage';
+import { MyCharityPage } from '../pages/dashboard/MyCharityPage';
+import { SubscriptionPage } from '../pages/dashboard/SubscriptionPage';
+import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
+import { AdminDrawsPage } from '../pages/admin/AdminDrawsPage';
+import { AdminCharitiesPage } from '../pages/admin/AdminCharitiesPage';
+import { AdminWinnersPage } from '../pages/admin/AdminWinnersPage';
+import { AdminReportsPage } from '../pages/admin/AdminReportsPage';
 import { AdminLayout, DashboardLayout, PublicLayout } from '../components/layout';
 import { ROUTES } from '../lib/constants';
 import { useUserStore } from '../stores/userStore';
-
-const SubscribePage = () => <div>SubscribePage</div>;
-const DashboardHomePage = () => <div>DashboardHomePage</div>;
-const ScoresPage = () => <div>ScoresPage</div>;
-const DrawsPage = () => <div>DrawsPage</div>;
-const WinningsPage = () => <div>WinningsPage</div>;
-const MyCharityPage = () => <div>MyCharityPage</div>;
-const SubscriptionPage = () => <div>SubscriptionPage</div>;
-const AdminUsersPage = () => <div>AdminUsersPage</div>;
-const AdminDrawsPage = () => <div>AdminDrawsPage</div>;
-const AdminCharitiesPage = () => <div>AdminCharitiesPage</div>;
-const AdminWinnersPage = () => <div>AdminWinnersPage</div>;
-const AdminReportsPage = () => <div>AdminReportsPage</div>;
 
 const AuthEntryRoute = ({ children }: { children: ReactElement }) => {
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
@@ -69,7 +68,11 @@ export const router = createBrowserRouter([
       },
       {
         path: ROUTES.SUBSCRIBE,
-        element: <SubscribePage />,
+        element: (
+          <ProtectedRoute redirectTo={ROUTES.SIGNUP}>
+            <SubscribePage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/test',
@@ -113,11 +116,11 @@ export const router = createBrowserRouter([
         element: <DashboardHomePage />,
       },
       {
-        path: 'dashboard/scores',
+        path: ROUTES.SCORES,
         element: <ScoresPage />,
       },
       {
-        path: 'dashboard/draws',
+        path: ROUTES.DRAWS,
         element: <DrawsPage />,
       },
       {

@@ -1,0 +1,269 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+.statCard {
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  padding: var(--space-5);
+}
+
+.statCard p {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.statCard span {
+  margin-top: var(--space-2);
+  display: block;
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 2fr auto;
+  gap: var(--space-4);
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.checkboxRow {
+  display: inline-flex;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  align-items: center;
+  font-size: var(--text-sm);
+}
+
+.charityList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.charityRow {
+  display: flex;
+  gap: var(--space-5);
+  align-items: center;
+  background: var(--color-bg);
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.charityImage {
+  width: calc(var(--space-20));
+  height: calc(var(--space-20));
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.charityMid {
+  flex: 1;
+  min-width: 0;
+}
+
+.midTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.midTop h4 {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.iconButton {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-accent);
+}
+
+.description {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  margin-top: var(--space-2);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+}
+
+.charityActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.actionBtn {
+  width: calc(var(--space-1) * 8);
+  height: calc(var(--space-1) * 8);
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: var(--transition);
+}
+
+.actionBtn:hover {
+  background: var(--color-bg-surface);
+}
+
+.inlineToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.featuredCard {
+  border-left: var(--space-1) solid var(--color-accent);
+}
+
+.inactiveCard {
+  opacity: 0.6;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.fieldCol,
+.fieldColFull {
+  min-width: 0;
+}
+
+.fieldColFull {
+  grid-column: 1 / -1;
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.select,
+.textarea {
+  width: 100%;
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.error {
+  margin-top: var(--space-1);
+  color: var(--color-error);
+  font-size: var(--text-xs);
+  display: block;
+}
+
+.imagePreview {
+  width: 100%;
+  height: calc(var(--space-20) * 1.5);
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-top: var(--space-2);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.toggleSwitch {
+  position: relative;
+  width: calc(var(--space-1) * 11);
+  height: calc(var(--space-1) * 6);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--space-1) / 2);
+}
+
+.toggleOn {
+  background: var(--color-accent);
+  justify-content: flex-end;
+}
+
+.toggleOff {
+  background: var(--color-bg-raised);
+  justify-content: flex-start;
+}
+
+.toggleThumb {
+  width: calc(var(--space-1) * 5);
+  height: calc(var(--space-1) * 5);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 900px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charityRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .charityActions {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 640px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}

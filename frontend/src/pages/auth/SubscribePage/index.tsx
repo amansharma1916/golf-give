@@ -75,12 +75,10 @@ export const SubscribePage = () => {
   const [processingStage, setProcessingStage] = useState<ProcessingStage>('idle');
   const [visibleSteps, setVisibleSteps] = useState(0);
 
-  const { user, subscription, isAuthenticated, setSubscription } = userStore((state) => ({
-    user: state.user,
-    subscription: state.subscription,
-    isAuthenticated: state.isAuthenticated,
-    setSubscription: state.setSubscription,
-  }));
+  const user = userStore((state) => state.user);
+  const subscription = userStore((state) => state.subscription);
+  const isAuthenticated = userStore((state) => state.isAuthenticated);
+  const setSubscription = userStore((state) => state.setSubscription);
   const addToast = toastStore((state) => state.addToast);
 
   const activationTimerRef = useRef<number | null>(null);
@@ -342,7 +340,7 @@ export const SubscribePage = () => {
                       size="lg"
                       fullWidth
                       onClick={handleConfirm}
-                      disabled={isProcessing || processingStage === 'success'}
+                      disabled={isProcessing}
                     >
                       {confirmButtonText}
                     </Button>

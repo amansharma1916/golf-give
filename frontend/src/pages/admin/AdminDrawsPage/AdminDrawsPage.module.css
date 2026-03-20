@@ -1,0 +1,340 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.controlCard {
+  background: var(--color-bg);
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.controlCardHeader {
+  background: linear-gradient(140deg, color-mix(in srgb, var(--color-primary) 92%, black), color-mix(in srgb, var(--color-primary) 68%, var(--color-accent)));
+  padding: var(--space-8);
+  color: var(--color-text-inverse);
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.headerBadges {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.controlCardBody {
+  padding: var(--space-8);
+}
+
+.controlGrid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.block {
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.block h4 {
+  color: var(--color-text);
+}
+
+.block p {
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+
+.drawTypeCards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.typeCard {
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-bg);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  cursor: pointer;
+}
+
+.typeCard strong {
+  color: var(--color-text);
+}
+
+.typeCard span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.typeCardActive {
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.algoToggle {
+  margin-top: var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.modeBtn {
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-surface);
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+}
+
+.modeBtnActive {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.poolTotal {
+  margin-top: var(--space-3);
+  font-size: var(--text-4xl);
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+.muted {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.poolRows {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.poolMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+}
+
+.poolTrack {
+  margin-top: var(--space-1);
+  background: var(--color-bg-raised);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.poolFill {
+  height: 100%;
+  background: var(--color-accent);
+  transform-origin: left center;
+  border-radius: var(--radius-full);
+}
+
+.actionCard {
+  background: var(--color-bg-surface);
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-7, var(--space-8));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.orDivider {
+  text-align: center;
+  color: var(--color-text-subtle);
+  margin: var(--space-3) 0;
+}
+
+.simResults {
+  border: calc(var(--space-1) / 2) solid var(--color-accent);
+  box-shadow: 0 0 0 var(--space-1) var(--color-accent-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  margin-top: var(--space-6);
+  background: var(--color-bg);
+}
+
+.simHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.simHeaderActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.simBalls {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin: var(--space-5) 0;
+}
+
+.simBall {
+  width: calc(var(--space-1) * 16);
+  height: calc(var(--space-1) * 16);
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.noWinners {
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+  margin-top: var(--space-3);
+}
+
+.projectedTable {
+  width: 100%;
+  margin-top: var(--space-5);
+  border-collapse: collapse;
+}
+
+.projectedTable th,
+.projectedTable td {
+  border-bottom: calc(var(--space-1) / 2) solid var(--color-border);
+  text-align: left;
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.summaryBadges {
+  margin-top: var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.summaryBadges span {
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.pastHeader {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pastTable {
+  width: 100%;
+  border-collapse: collapse;
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.pastTable th,
+.pastTable td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: calc(var(--space-1) / 2) solid var(--color-border);
+  text-align: left;
+  font-size: var(--text-sm);
+}
+
+.publishContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.publishWarning {
+  border-left: var(--space-1) solid var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 10%, var(--color-bg));
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.publishNumbers {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.publishBall {
+  width: calc(var(--space-1) * 9);
+  height: calc(var(--space-1) * 9);
+  border-radius: var(--radius-full);
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.processingModal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+  text-align: center;
+  padding: var(--space-4) 0;
+}
+
+.stepActive {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.stepInactive {
+  color: var(--color-text-subtle);
+}
+
+@media (max-width: 900px) {
+  .controlGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .simHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .simBall {
+    width: calc(var(--space-1) * 12);
+    height: calc(var(--space-1) * 12);
+  }
+
+  .pastTable {
+    display: block;
+    overflow-x: auto;
+  }
+}

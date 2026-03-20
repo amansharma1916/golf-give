@@ -19,6 +19,9 @@ export const Input = ({
   rightIcon,
   name,
   id,
+  min,
+  max,
+  step,
 }: InputProps) => {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -45,6 +48,9 @@ export const Input = ({
           disabled={disabled}
           required={required}
           autoComplete={autoComplete}
+          min={min}
+          max={max}
+          step={step}
           className={cn(
             styles.input,
             error && styles.inputError,

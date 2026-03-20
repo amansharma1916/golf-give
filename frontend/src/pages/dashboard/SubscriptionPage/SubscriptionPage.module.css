@@ -1,0 +1,313 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.planHeroCard {
+  background: linear-gradient(140deg, color-mix(in srgb, var(--color-primary) 92%, black), color-mix(in srgb, var(--color-primary) 68%, var(--color-accent)));
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  color: var(--color-text-inverse);
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.planLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: var(--text-xs);
+  color: color-mix(in srgb, var(--color-text-inverse) 70%, transparent);
+}
+
+.activePill {
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  background: color-mix(in srgb, var(--color-success) 22%, transparent);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.activeDot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-success);
+}
+
+.planName {
+  margin-top: var(--space-4);
+  font-size: var(--text-3xl);
+  font-weight: 800;
+}
+
+.planPrice {
+  margin-top: var(--space-2);
+  font-size: var(--text-xl);
+}
+
+.renewRow {
+  margin-top: var(--space-4);
+  opacity: 0.72;
+  font-size: var(--text-sm);
+}
+
+.billingProgress {
+  margin-top: var(--space-5);
+}
+
+.progressTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-sm);
+  opacity: 0.86;
+}
+
+.progressTrack {
+  margin-top: var(--space-2);
+  height: calc(var(--space-1) * 1.5);
+  background: color-mix(in srgb, var(--color-text-inverse) 16%, transparent);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+}
+
+.subSince {
+  margin-top: var(--space-5);
+  font-size: var(--text-xs);
+  opacity: 0.55;
+}
+
+.changeSection {
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  background: var(--color-bg);
+}
+
+.changeSection h3 {
+  color: var(--color-text);
+}
+
+.planOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.planOption {
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.planOptionSelected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.radioDot {
+  color: var(--color-accent);
+}
+
+.optionName {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.optionSub {
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.cancelSection {
+  margin-top: var(--space-8);
+  border-top: calc(var(--space-1) / 2) solid var(--color-border);
+  padding-top: var(--space-6);
+}
+
+.cancelTrigger {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--color-error);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelBody {
+  overflow: hidden;
+  margin-top: var(--space-4);
+}
+
+.cancelWarning {
+  background: color-mix(in srgb, var(--color-error) 10%, var(--color-bg));
+  border: calc(var(--space-1) / 2) solid color-mix(in srgb, var(--color-error) 28%, var(--color-border));
+  border-left: var(--space-1) solid var(--color-error);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cancelWarning h4 {
+  color: color-mix(in srgb, var(--color-error) 90%, var(--color-text));
+}
+
+.cancelList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+
+.cancelListItem {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  opacity: 0.8;
+}
+
+.sideCard {
+  background: var(--color-bg);
+  border: calc(var(--space-1) / 2) solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  position: sticky;
+  top: calc(68px + var(--space-5));
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: calc(var(--space-1) / 2) solid var(--color-border);
+  font-size: var(--text-sm);
+}
+
+.summaryRow:last-child {
+  border-bottom: none;
+}
+
+.summaryLabel {
+  color: var(--color-text-muted);
+}
+
+.summaryValue {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.quickActions {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.quickActions h4 {
+  margin-bottom: var(--space-2);
+}
+
+.quickLink {
+  text-decoration: none;
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  transition: transform var(--transition), background-color var(--transition);
+}
+
+.quickLink:hover {
+  background: var(--color-bg-surface);
+  transform: translateX(var(--space-1));
+}
+
+.helpCard {
+  margin-top: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-accent-subtle);
+  padding: var(--space-4);
+}
+
+.helpCard h5 {
+  color: var(--color-text);
+}
+
+.helpCard a {
+  margin-top: var(--space-2);
+  display: inline-block;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.processingModal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  padding: var(--space-4) 0;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sideCard {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .planHeroCard {
+    padding: var(--space-6);
+  }
+
+  .planOption {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

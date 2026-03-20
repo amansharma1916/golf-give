@@ -16,4 +16,7 @@ export interface InputProps {
   rightIcon?: ReactNode;
   name?: string;
   id?: string;
+  min?: string | number;
+  max?: string | number;
+  step?: string | number;
 }
