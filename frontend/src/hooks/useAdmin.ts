@@ -3,14 +3,18 @@ import { QUERY_KEYS } from '../lib/queryKeys';
 import {
   configureDrawType,
   createCharity,
+  createDraw,
   deleteCharity,
+  getAdminDisputes,
   getAdminDraws,
   getAdminReports,
   getAdminUsers,
   getAdminWinners,
   getCharityStats,
+  getOpenDisputes,
   markWinnerPaid,
   publishDraw,
+  resolveDispute,
   simulateDraw,
   updateCharity,
   updateUserScores,
@@ -47,6 +51,26 @@ export const useAdminDraws = () =>
     queryFn: getAdminDraws,
   });
 
+export const useCreateDraw = () => {
+  const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: (params: {
+      month: string;
+      drawType: 'random' | 'algorithmic';
+      algorithmMode?: 'most_common' | 'least_common';
+    }) => createDraw(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminDraws });
+      addToast({ message: 'Draw created successfully', type: 'success' });
+    },
+    onError: () => {
+      addToast({ message: 'Failed to create draw', type: 'error' });
+    },
+  });
+};
+
 export const useSimulateDraw = () => {
   const addToast = useToastStore((s) => s.addToast);
 
@@ -66,7 +90,8 @@ export const usePublishDraw = () => {
   const addToast = useToastStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: publishDraw,
+    mutationFn: ({ drawId, winningNumbers }: { drawId: string; winningNumbers: number[] }) =>
+      publishDraw(drawId, winningNumbers),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminDraws });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.draws });
@@ -85,8 +110,15 @@ export const useConfigureDrawType = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ drawId, drawType }: { drawId: string; drawType: 'random' | 'algorithmic' }) =>
-      configureDrawType(drawId, drawType),
+    mutationFn: ({
+      drawId,
+      drawType,
+      algorithmMode,
+    }: {
+      drawId: string;
+      drawType: 'random' | 'algorithmic';
+      algorithmMode?: 'most_common' | 'least_common';
+    }) => configureDrawType(drawId, drawType, algorithmMode),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminDraws });
     },
@@ -192,6 +224,45 @@ export const useDeleteCharity = () => {
     },
     onError: () => {
       addToast({ message: 'Failed to remove charity', type: 'error' });
+    },
+  });
+};
+
+// Dispute Hooks
+
+export const useAdminDisputes = () =>
+  useQuery({
+    queryKey: QUERY_KEYS.adminWinners,
+    queryFn: getAdminDisputes,
+  });
+
+export const useOpenDisputes = () =>
+  useQuery({
+    queryKey: ['disputes', 'open'],
+    queryFn: getOpenDisputes,
+  });
+
+export const useResolveDispute = () => {
+  const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: ({
+      disputeId,
+      status,
+      adminResponse,
+    }: {
+      disputeId: string;
+      status: 'investigating' | 'resolved' | 'rejected';
+      adminResponse: string;
+    }) => resolveDispute(disputeId, status, adminResponse),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['disputes'] });
+      queryClient.invalidateQueries({ queryKey: ['disputes', 'open'] });
+      addToast({ message: 'Dispute resolved successfully', type: 'success' });
+    },
+    onError: () => {
+      addToast({ message: 'Failed to resolve dispute', type: 'error' });
     },
   });
 };

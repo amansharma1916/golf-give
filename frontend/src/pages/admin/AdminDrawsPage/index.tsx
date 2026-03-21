@@ -5,6 +5,7 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../../components/layout';
 import { Badge, Button, Modal, Spinner } from '../../../components/ui';
+import { CreateDrawModal } from '../../../components/admin/CreateDrawModal';
 import { useAdminDraws, useAdminUsers, useConfigureDrawType, usePublishDraw, useSimulateDraw } from '../../../hooks/useAdmin';
 import { containerVariants, itemVariants, slideUpVariants } from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
@@ -48,6 +49,7 @@ export const AdminDrawsPage = () => {
   const [simulationResults, setSimulationResults] = useState<number[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showCreateDrawModal, setShowCreateDrawModal] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [processingStepIndex, setProcessingStepIndex] = useState(0);
   const [drawStatus, setDrawStatus] = useState<'pending' | 'published'>('pending');
@@ -55,6 +57,7 @@ export const AdminDrawsPage = () => {
   const prizePoolRef = useRef<HTMLParagraphElement>(null);
 
   const currentDraw = adminDraws[0];
+  const currentDrawId = currentDraw?.id;
   const publishedDraws = adminDraws.filter((draw: { status: string }) => draw.status === 'published');
 
   const projectedWinners = useMemo<ProjectedWinner[]>(() => {
@@ -112,8 +115,21 @@ export const AdminDrawsPage = () => {
       return;
     }
 
-    configureDrawTypeMutation.mutate({ drawId: currentDraw.id, drawType });
-  }, [configureDrawTypeMutation, currentDraw, drawType]);
+    const currentDrawType = (currentDraw.draw_type ?? currentDraw.drawType) as DrawType | undefined;
+    const currentAlgorithmMode = (currentDraw.algorithm_mode ?? currentDraw.algorithmMode) as AlgorithmMode | undefined;
+    const targetAlgorithmMode = drawType === 'algorithmic' ? algorithmMode : undefined;
+
+    // Avoid an update/refetch loop by skipping no-op draw config mutations.
+    if (currentDrawType === drawType && currentAlgorithmMode === targetAlgorithmMode) {
+      return;
+    }
+
+    configureDrawTypeMutation.mutate({
+      drawId: currentDraw.id,
+      drawType,
+      algorithmMode: targetAlgorithmMode,
+    });
+  }, [configureDrawTypeMutation, currentDraw, drawType, algorithmMode]);
 
   useEffect(() => {
     if (!isPublishing) return;
@@ -123,22 +139,25 @@ export const AdminDrawsPage = () => {
       setProcessingStepIndex((prev) => Math.min(prev + 1, processingSteps.length - 1));
     }, 900);
 
-    const publishTimer = window.setTimeout(() => {
+    const publishTimer = window.setTimeout(async () => {
       window.clearInterval(stepTimer);
-      if (currentDraw) {
-        publishDrawMutation.mutate(currentDraw.id);
+      if (currentDrawId && simulationResults.length > 0) {
+        try {
+          await publishDrawMutation.mutateAsync({ drawId: currentDrawId, winningNumbers: simulationResults });
+          setDrawStatus('published');
+        } catch (error) {
+          // Error is handled by the mutation onError callback
+        }
       }
       setIsPublishing(false);
       setShowPublishModal(false);
-      setDrawStatus('published');
-      addToast({ type: 'success', message: 'Draw published successfully!' });
     }, 3000);
 
     return () => {
       window.clearInterval(stepTimer);
       window.clearTimeout(publishTimer);
     };
-  }, [addToast, currentDraw, isPublishing, publishDrawMutation]);
+  }, [currentDrawId, isPublishing, publishDrawMutation, simulationResults]);
 
   const countdown = useMemo(() => {
     const diff = Math.max(0, new Date('2026-04-30T23:59:59').getTime() - Date.now());
@@ -152,13 +171,12 @@ export const AdminDrawsPage = () => {
   }, []);
 
   const runSimulation = () => {
-    if (!currentDraw) {
-      return;
-    }
-
     setIsSimulating(true);
     simulateDrawMutation
-      .mutateAsync(currentDraw.id)
+      .mutateAsync({
+        drawType,
+        algorithmMode: drawType === 'algorithmic' ? algorithmMode : undefined,
+      })
       .then((result: { winningNumbers?: number[] }) => {
         setSimulationResults(result.winningNumbers ?? generateRandomDrawNumbers());
       })
@@ -172,10 +190,16 @@ export const AdminDrawsPage = () => {
   };
 
   const openPublish = () => {
+    if (!currentDraw) {
+      addToast({ type: 'warning', message: 'Please create a draw first' });
+      return;
+    }
+
     if (simulationResults.length === 0) {
       addToast({ type: 'warning', message: 'Please run a simulation first' });
       return;
     }
+
     setShowPublishModal(true);
   };
 
@@ -184,6 +208,11 @@ export const AdminDrawsPage = () => {
       <PageHeader
         title="Draw manager"
         subtitle="Configure, simulate, and publish monthly prize draws."
+        actions={
+          <Button variant="secondary" size="sm" onClick={() => setShowCreateDrawModal(true)}>
+            Create Draw
+          </Button>
+        }
       />
 
       <section className={styles.controlCard}>
@@ -283,7 +312,7 @@ export const AdminDrawsPage = () => {
 
               <h4>Publish draw</h4>
               <p>This action is permanent and will notify all winners by email.</p>
-              <Button variant="primary" size="md" fullWidth disabled={simulationResults.length === 0} onClick={openPublish}>
+              <Button variant="primary" size="md" fullWidth onClick={openPublish}>
                 Publish draw results
               </Button>
             </aside>
@@ -395,7 +424,18 @@ export const AdminDrawsPage = () => {
         footer={
           <>
             <Button variant="ghost" size="sm" onClick={() => setShowPublishModal(false)}>Cancel</Button>
-            <Button variant="danger" size="sm" onClick={() => setIsPublishing(true)}>Publish draw</Button>
+            <Button
+              variant="danger"
+              size="sm"
+              loading={isPublishing}
+              disabled={isPublishing}
+              onClick={() => {
+                setShowPublishModal(false);
+                setIsPublishing(true);
+              }}
+            >
+              Publish draw
+            </Button>
           </>
         }
       >
@@ -417,6 +457,8 @@ export const AdminDrawsPage = () => {
           ))}
         </div>
       </Modal>
+
+      <CreateDrawModal isOpen={showCreateDrawModal} onClose={() => setShowCreateDrawModal(false)} />
     </div>
   );
 };

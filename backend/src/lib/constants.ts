@@ -43,6 +43,9 @@ export const PRIZE_POOL_CONFIG = {
   three_match: 25,
 };
 
+// Tax withholding configuration (percentage, e.g., 30 = 30%)
+export const TAX_WITHHOLDING_RATE = 30;
+
 export const STABLEFORD_MIN = 1;
 export const STABLEFORD_MAX = 45;
 export const MAX_SCORES_PER_USER = 5;

@@ -1,13 +1,33 @@
 import { useEffect, useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
 import { ErrorBoundary } from './components/layout';
-import { Spinner } from './components/ui';
+import { Spinner, Toast } from './components/ui';
+import { getErrorMessage, notifyError, notifySuccess, notifyWarning } from './lib/notify';
 import { router } from './router';
 import { getCurrentSession, getMe, signOut } from './services/auth.service';
 import { useUserStore } from './stores/userStore';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      if (query.meta?.silentError) {
+        return;
+      }
+
+      notifyError(getErrorMessage(error, 'Failed to fetch data.'));
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _variables, _context, mutation) => {
+      if (mutation.meta?.silentError) {
+        return;
+      }
+
+      notifyError(getErrorMessage(error, 'Action failed. Please try again.'));
+    },
+  }),
+});
 
 const App = () => {
   const setUser = useUserStore((state) => state.setUser);
@@ -34,7 +54,8 @@ const App = () => {
         const me = await getMe();
         setUser(me.user);
         setSubscription(me.subscription);
-      } catch {
+      } catch (error: unknown) {
+        notifyError(getErrorMessage(error, 'Failed to restore your session.'));
         await signOut();
         logout();
       } finally {
@@ -45,6 +66,29 @@ const App = () => {
 
     bootstrapAuth();
   }, [authToken, logout, setAuthToken, setLoading, setSubscription, setUser]);
+
+  useEffect(() => {
+    const onOnline = () => notifySuccess('Connection restored.');
+    const onOffline = () => notifyWarning('You are offline. Some actions may fail.');
+    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+      notifyError(getErrorMessage(event.reason, 'An unexpected error occurred.'));
+    };
+    const onGlobalError = () => {
+      notifyError('Unexpected runtime error occurred.');
+    };
+
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
+    window.addEventListener('error', onGlobalError);
+
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
+      window.removeEventListener('error', onGlobalError);
+    };
+  }, []);
 
   if (isBootstrapping) {
     return (
@@ -66,6 +110,7 @@ const App = () => {
             <Spinner size="lg" color="accent" />
           </div>
         </div>
+        <Toast />
       </QueryClientProvider>
     );
   }
@@ -75,6 +120,7 @@ const App = () => {
       <ErrorBoundary>
         <RouterProvider router={router} />
       </ErrorBoundary>
+      <Toast />
     </QueryClientProvider>
   );
 };

@@ -1,6 +1,23 @@
 import { supabase } from '../lib/supabase';
 import { User, Subscription } from '../types';
 
+interface EditUserInput {
+  fullName?: string;
+  isAdmin?: boolean;
+}
+
+interface AdminReports {
+  totalUsers: number | null;
+  activeSubscriptions: number | null;
+  totalPrizePool: number;
+  drawsPublished: number | null;
+  winnersCreated: number | null;
+  stats: {
+    avgScorePerUser: number;
+    avgSubscriptionValue: number;
+  };
+}
+
 export async function getAdminUsers(): Promise<{
   users: User[];
   subscriptions: Subscription[];
@@ -27,8 +44,8 @@ export async function getAdminUsers(): Promise<{
   };
 }
 
-export async function editUser(userId: string, data: Record<string, any>): Promise<User> {
-  const updateData: any = {};
+export async function editUser(userId: string, data: EditUserInput): Promise<User> {
+  const updateData: Partial<Pick<User, 'full_name' | 'is_admin'>> = {};
   if (data.fullName !== undefined) updateData.full_name = data.fullName;
   if (data.isAdmin !== undefined) updateData.is_admin = data.isAdmin;
 
@@ -46,7 +63,7 @@ export async function editUser(userId: string, data: Record<string, any>): Promi
   return user;
 }
 
-export async function getAdminReports(): Promise<any> {
+export async function getAdminReports(): Promise<AdminReports> {
   // Get total users
   const { count: totalUsers } = await supabase
     .from('users')

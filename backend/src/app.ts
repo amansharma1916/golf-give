@@ -10,6 +10,7 @@ import charitiesRoutes from './routes/charities.routes';
 import drawsRoutes from './routes/draws.routes';
 import winnersRoutes from './routes/winners.routes';
 import adminRoutes from './routes/admin.routes';
+import webhooksRoutes from './routes/webhooks.routes';
 
 const app: Express = express();
 
@@ -36,6 +37,7 @@ app.use('/api/charities', charitiesRoutes);
 app.use('/api/draws', drawsRoutes);
 app.use('/api/winners', winnersRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/webhooks', webhooksRoutes);
 
 app.use(errorHandlerMiddleware);
 

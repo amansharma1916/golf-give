@@ -6,11 +6,13 @@ import {
   simulateDraw_,
   publishDraw,
   configureDraw,
+  createDraw,
 } from '../services/draws.service';
 import {
   simulateDrawSchema,
   publishDrawSchema,
   configureDrawSchema,
+  createDrawSchema,
 } from '../validators/draws.validators';
 import { ApiResponse, Draw } from '../types';
 
@@ -127,6 +129,26 @@ export async function configure(req: Request, res: Response): Promise<void> {
     res.json(response);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to configure draw';
+    const response: ApiResponse<null> = {
+      success: false,
+      error: { message },
+    };
+    res.status(400).json(response);
+  }
+}
+
+export async function create(req: Request, res: Response): Promise<void> {
+  try {
+    const validatedData = createDrawSchema.parse(req.body);
+    const draw = await createDraw(validatedData.month, validatedData.drawType, validatedData.algorithmMode);
+
+    const response: ApiResponse<Draw> = {
+      success: true,
+      data: draw,
+    };
+    res.status(201).json(response);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to create draw';
     const response: ApiResponse<null> = {
       success: false,
       error: { message },

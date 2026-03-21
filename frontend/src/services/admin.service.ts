@@ -115,24 +115,40 @@ export const updateUserScores = async (
 };
 
 export const getAdminDraws = async () => {
-  const res = await api.get('/draws');
+  const res = await api.get('/draws'); // Public endpoint for reading draws
   return res.data.data;
+};
+
+export const createDraw = async (params: {
+  month: string;
+  drawType: 'random' | 'algorithmic';
+  algorithmMode?: 'most_common' | 'least_common';
+}): Promise<void> => {
+  await api.post('/admin/draws', params);
 };
 
 export const configureDrawType = async (
   drawId: string,
-  drawType: 'random' | 'algorithmic'
+  drawType: 'random' | 'algorithmic',
+  algorithmMode?: 'most_common' | 'least_common'
 ): Promise<void> => {
-  await api.put(`/draws/${drawId}/configure`, { drawType });
+  const payload: any = { drawType };
+  if (algorithmMode) {
+    payload.algorithmMode = algorithmMode;
+  }
+  await api.put(`/admin/draws/${drawId}/configure`, payload);
 };
 
-export const simulateDraw = async (drawId: string) => {
-  const res = await api.post('/draws/simulate', { drawId });
+export const simulateDraw = async (params: {
+  drawType: 'random' | 'algorithmic';
+  algorithmMode?: 'most_common' | 'least_common';
+}) => {
+  const res = await api.post('/admin/draws/simulate', params);
   return res.data.data;
 };
 
-export const publishDraw = async (drawId: string): Promise<void> => {
-  await api.post(`/draws/${drawId}/publish`);
+export const publishDraw = async (drawId: string, winningNumbers: number[]): Promise<void> => {
+  await api.post(`/admin/draws/${drawId}/publish`, { winningNumbers });
 };
 
 export const getAdminWinners = async () => {
@@ -150,6 +166,25 @@ export const verifyWinner = async (
 
 export const markWinnerPaid = async (winnerId: string): Promise<void> => {
   await api.post(`/winners/${winnerId}/mark-paid`);
+};
+
+// Dispute Services
+export const getAdminDisputes = async () => {
+  const res = await api.get('/winners/disputes');
+  return res.data.data;
+};
+
+export const getOpenDisputes = async () => {
+  const res = await api.get('/winners/disputes/open');
+  return res.data.data;
+};
+
+export const resolveDispute = async (
+  disputeId: string,
+  status: 'investigating' | 'resolved' | 'rejected',
+  adminResponse: string
+): Promise<void> => {
+  await api.post(`/winners/disputes/${disputeId}/resolve`, { status, adminResponse });
 };
 
 export const getAdminReports = async () => {

@@ -80,10 +80,26 @@ export interface Payout {
   draw_entry_id: string;
   user_id: string;
   amount: number;
+  gross_amount: number;
+  net_amount: number;
+  tax_amount: number;
+  tax_rate: number;
   status: 'pending' | 'verified' | 'paid';
   proof_url: string | null;
   admin_note: string | null;
   created_at: string;
+}
+
+export interface WinnerDispute {
+  id: string;
+  payout_id: string;
+  user_id: string;
+  reason: string;
+  status: 'open' | 'investigating' | 'resolved' | 'rejected';
+  admin_response: string | null;
+  created_at: string;
+  updated_at: string;
+  resolved_at: string | null;
 }
 
 export interface ApiResponse<T> {
