@@ -6,18 +6,30 @@ export const formatCurrency = (amount: number, currency = 'GBP'): string => {
 };
 
 export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
+
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(dateString));
+  }).format(date);
 };
 
 export const formatMonth = (dateString: string): string => {
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Invalid month';
+  }
+
   return new Intl.DateTimeFormat('en-GB', {
     month: 'long',
     year: 'numeric',
-  }).format(new Date(dateString));
+  }).format(date);
 };
 
 export const getInitials = (name: string): string => {

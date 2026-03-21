@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input, Tabs } from '../../../components/ui';
+import { useCharities, useFeaturedCharities } from '../../../hooks/useCharities';
 import { containerVariants, fadeInVariants, itemVariants, pageVariants } from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
 import { formatCurrency } from '../../../lib/utils';
@@ -35,105 +36,6 @@ const CATEGORIES = [
 ] as const;
 
 type Category = (typeof CATEGORIES)[number];
-
-const CHARITIES: CharityCardData[] = [
-  {
-    id: '1',
-    name: 'Golf Foundation',
-    category: 'Youth & Education',
-    description:
-      'Getting more young people into golf across the UK. The Golf Foundation works with schools and clubs to create affordable pathways into the sport for children from all backgrounds.',
-    imageUrl: 'https://placehold.co/600x360/1a1a2e/e94560?text=Golf+Foundation',
-    totalRaised: 48200,
-    memberCount: 312,
-    isFeatured: true,
-    websiteUrl: 'https://golf-foundation.org.uk',
-  },
-  {
-    id: '2',
-    name: 'Veterans Golf Society',
-    category: 'Veterans',
-    description:
-      'Supporting veterans through the mental health benefits of golf. We provide free memberships and coaching to veterans dealing with PTSD, isolation, and physical rehabilitation.',
-    imageUrl: 'https://placehold.co/600x360/1a1a2e/e94560?text=Veterans+Golf',
-    totalRaised: 32100,
-    memberCount: 218,
-    isFeatured: true,
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '3',
-    name: 'Caddy Scholarship Fund',
-    category: 'Youth & Education',
-    description:
-      'Providing education scholarships for caddies and their families. We believe that working on the course should open doors, not close them.',
-    imageUrl: 'https://placehold.co/600x360/1a1a2e/e94560?text=Caddy+Fund',
-    totalRaised: 27600,
-    memberCount: 189,
-    isFeatured: false,
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '4',
-    name: 'Greenkeepers Welfare Trust',
-    category: 'Community Sport',
-    description:
-      'Supporting the welfare of greenkeepers and golf course staff across the UK. Financial assistance, mental health support, and career development for those who maintain our courses.',
-    imageUrl: 'https://placehold.co/600x360/1a1a2e/e94560?text=Greenkeepers',
-    totalRaised: 19400,
-    memberCount: 143,
-    isFeatured: false,
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '5',
-    name: 'Mind on the Fairway',
-    category: 'Mental Health',
-    description:
-      'Using golf as a vehicle for mental health recovery. We run free weekly sessions at golf clubs across the UK for people experiencing depression, anxiety, and loneliness.',
-    imageUrl: 'https://placehold.co/600x360/1a1a2e/e94560?text=Mind+Fairway',
-    totalRaised: 22800,
-    memberCount: 167,
-    isFeatured: true,
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '6',
-    name: 'Links to Nature',
-    category: 'Environment',
-    description:
-      'Transforming golf courses into biodiversity havens. We work with clubs to rewild rough areas, plant native species, and create habitats for wildlife on course margins.',
-    imageUrl: 'https://placehold.co/600x360/1a1a2e/e94560?text=Links+Nature',
-    totalRaised: 15300,
-    memberCount: 98,
-    isFeatured: false,
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '7',
-    name: 'Junior Tour Bursary',
-    category: 'Youth & Education',
-    description:
-      'Funding talented junior golfers from low-income backgrounds to compete in regional and national junior tours. Every young talent deserves a fair shot at the game.',
-    imageUrl: 'https://placehold.co/600x360/1a1a2e/e94560?text=Junior+Tour',
-    totalRaised: 31700,
-    memberCount: 204,
-    isFeatured: false,
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '8',
-    name: 'Swing for Research',
-    category: 'Medical Research',
-    description:
-      'Raising funds for cancer research through golf events and subscriptions. Every pound raised goes directly to UK-based oncology research teams.',
-    imageUrl: 'https://placehold.co/600x360/1a1a2e/e94560?text=Swing+Research',
-    totalRaised: 41900,
-    memberCount: 276,
-    isFeatured: false,
-    websiteUrl: 'https://example.com',
-  },
-];
 
 const HERO_STATS = [
   { value: '£284,500+', label: 'Total raised' },
@@ -189,20 +91,52 @@ const SEARCH_ICON = (
 
 export const CharitiesPage = () => {
   const navigate = useNavigate();
+  const { data: charitiesApi = [] } = useCharities();
+  const { data: featuredApi = [] } = useFeaturedCharities();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeCategory, setActiveCategory] = useState<Category>('All');
 
+  const charities = useMemo<CharityCardData[]>(
+    () =>
+      charitiesApi.map((charity) => ({
+        id: charity.id,
+        name: charity.name,
+        category: charity.isFeatured ? 'Community Sport' : 'Community Sport',
+        description: charity.description,
+        imageUrl: charity.imageUrl,
+        totalRaised: 0,
+        memberCount: 0,
+        isFeatured: charity.isFeatured,
+        websiteUrl: charity.websiteUrl,
+      })),
+    [charitiesApi],
+  );
+
   const filteredCharities = useMemo(() => {
-    return CHARITIES.filter((charity) => {
+    return charities.filter((charity) => {
       const matchesSearch =
         charity.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         charity.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = activeCategory === 'All' || charity.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, activeCategory]);
+  }, [activeCategory, charities, searchQuery]);
 
-  const featuredCharities = useMemo(() => CHARITIES.filter((charity) => charity.isFeatured), []);
+  const featuredCharities = useMemo(
+    () =>
+      featuredApi.map((charity) => ({
+        id: charity.id,
+        name: charity.name,
+        category: 'Community Sport',
+        description: charity.description,
+        imageUrl: charity.imageUrl,
+        totalRaised: 0,
+        memberCount: 0,
+        isFeatured: charity.isFeatured,
+        websiteUrl: charity.websiteUrl,
+      })),
+    [featuredApi],
+  );
 
   const hasActiveFilters = activeCategory !== 'All' || searchQuery.trim() !== '';
 

@@ -4,8 +4,8 @@ import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { PageHeader } from '../../../components/layout';
 import { Avatar, Badge, Button, Modal, Tabs } from '../../../components/ui';
+import { useAdminWinners, useMarkWinnerPaid, useVerifyWinner } from '../../../hooks/useAdmin';
 import { pageVariants } from '../../../lib/animations';
-import { MOCK_ADMIN_WINNERS } from '../../../lib/mockData';
 import { formatDate, formatMonth } from '../../../lib/utils';
 import { useToastStore } from '../../../stores/toastStore';
 import styles from './AdminWinnersPage.module.css';
@@ -34,14 +34,12 @@ const baseBalls = [34, 28, 31, 25, 38];
 
 export const AdminWinnersPage = () => {
   const addToast = useToastStore((state) => state.addToast);
+  const { data: winnersData = [] } = useAdminWinners();
+  const verifyWinnerMutation = useVerifyWinner();
+  const markWinnerPaidMutation = useMarkWinnerPaid();
 
   const [activeTab, setActiveTab] = useState<WinnerStatusTab>('all');
-  const [winners, setWinners] = useState<WinnerRecord[]>(
-    MOCK_ADMIN_WINNERS.map((winner) => ({
-      ...winner,
-      status: winner.status,
-    })),
-  );
+  const [winners, setWinners] = useState<WinnerRecord[]>([]);
   const [noteFor, setNoteFor] = useState<string | null>(null);
   const [noteValue, setNoteValue] = useState('');
   const [approveTarget, setApproveTarget] = useState<WinnerRecord | null>(null);
@@ -61,6 +59,10 @@ export const AdminWinnersPage = () => {
     if (activeTab === 'all') return winners;
     return winners.filter((winner) => winner.status === activeTab);
   }, [activeTab, winners]);
+
+  useEffect(() => {
+    setWinners(winnersData.map((winner: WinnerRecord) => winner));
+  }, [winnersData]);
 
   useEffect(() => {
     const counters = [
@@ -98,7 +100,15 @@ export const AdminWinnersPage = () => {
     { id: 'paid', label: 'Paid' },
   ];
 
-  const updateWinnerStatus = (id: string, status: WinnerRecord['status']) => {
+  const updateWinnerStatus = async (id: string, status: WinnerRecord['status']) => {
+    if (status === 'paid') {
+      await markWinnerPaidMutation.mutateAsync(id);
+    }
+
+    if (status === 'verified') {
+      await verifyWinnerMutation.mutateAsync({ id, approved: true });
+    }
+
     setWinners((prev) => prev.map((winner) => (winner.id === id ? { ...winner, status } : winner)));
   };
 
@@ -241,7 +251,7 @@ export const AdminWinnersPage = () => {
                 if (!approveTarget) return;
                 const target = approveTarget;
                 window.setTimeout(() => {
-                  updateWinnerStatus(target.id, 'verified');
+                  void updateWinnerStatus(target.id, 'verified');
                   setApproveTarget(null);
                   addToast({ type: 'success', message: 'Winner approved. Member will be notified.' });
                 }, 800);
@@ -268,7 +278,7 @@ export const AdminWinnersPage = () => {
               disabled={!rejectReason.trim()}
               onClick={() => {
                 if (!rejectTarget || !rejectReason.trim()) return;
-                updateWinnerStatus(rejectTarget.id, 'pending');
+                void verifyWinnerMutation.mutateAsync({ id: rejectTarget.id, approved: false, adminNote: rejectReason });
                 setRejectReason('');
                 setRejectTarget(null);
                 addToast({ type: 'warning', message: 'Submission rejected.' });
@@ -296,7 +306,7 @@ export const AdminWinnersPage = () => {
               onClick={() => {
                 if (!paidTarget) return;
                 const target = paidTarget;
-                updateWinnerStatus(target.id, 'paid');
+                void updateWinnerStatus(target.id, 'paid');
                 setPaidTarget(null);
                 addToast({ type: 'success', message: `Payment of £${target.amount.toFixed(2)} marked as sent to ${target.userName}.` });
               }}

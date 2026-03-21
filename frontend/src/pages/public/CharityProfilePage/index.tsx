@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Badge, Button, Modal } from '../../../components/ui';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useCharityById } from '../../../hooks/useCharities';
 import { containerVariants, itemVariants, pageVariants, slideUpVariants } from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
 import { formatCurrency, formatDate } from '../../../lib/utils';
@@ -128,7 +129,15 @@ const formatEventParts = (dateString: string): { day: string; month: string } =>
 export const CharityProfilePage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const charity = CHARITY_DETAIL;
+  const { data: charityData } = useCharityById(id ?? '');
+  const charity: CharityDetail = {
+    ...CHARITY_DETAIL,
+    id: charityData?.id ?? CHARITY_DETAIL.id,
+    name: charityData?.name ?? CHARITY_DETAIL.name,
+    description: charityData?.description ?? CHARITY_DETAIL.description,
+    imageUrl: charityData?.imageUrl ?? CHARITY_DETAIL.imageUrl,
+    websiteUrl: charityData?.websiteUrl ?? CHARITY_DETAIL.websiteUrl,
+  };
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   const descriptionParagraphs = useMemo(() => {

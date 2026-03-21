@@ -4,8 +4,8 @@ import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { PageHeader } from '../../../components/layout';
 import { Avatar, Badge, Button, Input, Modal } from '../../../components/ui';
+import { useAdminUsers, useUpdateUserScores } from '../../../hooks/useAdmin';
 import { containerVariants, itemVariants } from '../../../lib/animations';
-import { MOCK_ALL_USERS } from '../../../lib/mockData';
 import { cn, formatDate, formatMonth } from '../../../lib/utils';
 import { useToastStore } from '../../../stores/toastStore';
 import styles from './AdminUsersPage.module.css';
@@ -14,7 +14,19 @@ gsap.registerPlugin(ScrollTrigger);
 
 type UserStatusFilter = 'all' | 'active' | 'lapsed' | 'cancelled';
 
-type EditableUser = (typeof MOCK_ALL_USERS)[number];
+type EditableUser = {
+  id: string;
+  fullName: string;
+  email: string;
+  createdAt: string;
+  scores: number[];
+  totalWinnings: number;
+  subscription: {
+    plan: 'monthly' | 'yearly';
+    status: 'active' | 'lapsed' | 'cancelled' | 'inactive';
+    currentPeriodEnd: string;
+  };
+};
 
 const getScoreClass = (score: number): string => {
   if (score >= 35) return styles.scoreGood;
@@ -35,6 +47,8 @@ const EditIcon = () => <span aria-hidden="true">✎</span>;
 
 export const AdminUsersPage = () => {
   const addToast = useToastStore((state) => state.addToast);
+  const { data: usersData = [] } = useAdminUsers();
+  const updateUserScoresMutation = useUpdateUserScores();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<UserStatusFilter>('all');
   const [selectedUser, setSelectedUser] = useState<EditableUser | null>(null);
@@ -46,7 +60,7 @@ export const AdminUsersPage = () => {
   const lapsedRef = useRef<HTMLSpanElement>(null);
   const cancelledRef = useRef<HTMLSpanElement>(null);
 
-  const users = MOCK_ALL_USERS;
+  const users: EditableUser[] = usersData.map((user: EditableUser) => user);
 
   const statusCounts = useMemo(() => {
     return {
@@ -102,10 +116,20 @@ export const AdminUsersPage = () => {
     setDraftScores(next);
   };
 
-  const saveScores = () => {
+  const saveScores = async () => {
     if (!editingUser) return;
-    addToast({ type: 'success', message: `Scores updated for ${editingUser.fullName}` });
-    setEditingUser(null);
+
+    try {
+      const payload = draftScores
+        .map((score) => Number(score))
+        .filter((score) => Number.isFinite(score) && score > 0)
+        .map((score) => ({ score, playedAt: new Date().toISOString().slice(0, 10) }));
+
+      await updateUserScoresMutation.mutateAsync({ userId: editingUser.id, scores: payload });
+      setEditingUser(null);
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update scores' });
+    }
   };
 
   return (

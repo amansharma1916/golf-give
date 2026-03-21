@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SubscribeLayout } from '../../../components/layout';
 import { Badge, Button, Card, Spinner } from '../../../components/ui';
+import { useCharityById } from '../../../hooks/useCharities';
+import { useMockCheckout } from '../../../hooks/useSubscription';
 import { containerVariants, itemVariants, pageTransition, pageVariants } from '../../../lib/animations';
 import { PLANS, ROUTES, type PlanId } from '../../../lib/constants';
-import { activateSubscription } from '../../../services/subscriptions.service';
-import { useToastStore as toastStore } from '../../../stores/toastStore';
 import { useUserStore as userStore } from '../../../stores/userStore';
 import styles from './SubscribePage.module.css';
 
@@ -54,10 +54,6 @@ const TRUST_ITEMS: TrustItem[] = [
   },
 ];
 
-const CHARITY_BY_ID: Record<string, string> = {
-  '1': 'Golf Foundation',
-};
-
 const formatMoney = (value: number) => {
   return `£${value.toFixed(2)}`;
 };
@@ -72,22 +68,19 @@ export const SubscribePage = () => {
   const planId = (searchParams.get('plan') || 'monthly') as PlanId;
   const charityId = searchParams.get('charity') || '1';
   const [selectedPlan, setSelectedPlan] = useState<PlanId>(planId);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [processingStage, setProcessingStage] = useState<ProcessingStage>('idle');
   const [visibleSteps, setVisibleSteps] = useState(0);
+  const { mutateAsync: checkout, isPending } = useMockCheckout();
 
   const subscription = userStore((state) => state.subscription);
   const isAuthenticated = userStore((state) => state.isAuthenticated);
-  const setSubscription = userStore((state) => state.setSubscription);
-  const addToast = toastStore((state) => state.addToast);
-
-  const activationTimerRef = useRef<number | null>(null);
+  const { data: selectedCharity } = useCharityById(charityId);
 
   const safePlan = isPlanId(selectedPlan) ? selectedPlan : 'monthly';
   const planConfig = PLANS[safePlan];
   const planAmount = planConfig.amount / 100;
   const charityContribution = planAmount * 0.1;
-  const charityName = CHARITY_BY_ID[charityId] ?? 'Golf Foundation';
+  const charityName = selectedCharity?.name ?? 'Selected charity';
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -139,44 +132,17 @@ export const SubscribePage = () => {
     };
   }, [navigate, processingStage]);
 
-  useEffect(() => {
-    return () => {
-      if (activationTimerRef.current) {
-        window.clearTimeout(activationTimerRef.current);
-      }
-    };
-  }, []);
-
   const handleConfirm = async () => {
     if (processingStage !== 'idle') {
       return;
     }
 
-    setIsProcessing(true);
     setProcessingStage('processing');
 
     try {
-      await new Promise((resolve) => {
-        activationTimerRef.current = window.setTimeout(resolve, 1200);
-      });
-
-      const subscriptionData = await activateSubscription(safePlan);
-      setSubscription(subscriptionData);
-
-      addToast({
-        message: 'Welcome to GolfGive! Your subscription is active.',
-        type: 'success',
-      });
-
-      setIsProcessing(false);
+      await checkout(safePlan);
       setProcessingStage('success');
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to activate subscription';
-      addToast({
-        message,
-        type: 'error',
-      });
-      setIsProcessing(false);
+    } catch {
       setProcessingStage('idle');
     }
   };
@@ -344,7 +310,7 @@ export const SubscribePage = () => {
                       size="lg"
                       fullWidth
                       onClick={handleConfirm}
-                      disabled={isProcessing}
+                      disabled={isPending || processingStage !== 'idle'}
                     >
                       {confirmButtonText}
                     </Button>

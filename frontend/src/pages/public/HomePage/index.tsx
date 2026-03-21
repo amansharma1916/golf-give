@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link, useNavigate } from 'react-router-dom';
 import { PublicLayout } from '../../../components/layout';
 import { Avatar, Badge, Button, Card } from '../../../components/ui';
+import { useFeaturedCharities } from '../../../hooks/useCharities';
 import * as animations from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
 import { formatCurrency } from '../../../lib/utils';
@@ -84,30 +85,6 @@ const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
   },
 ];
 
-const FEATURED_CHARITIES: Charity[] = [
-  {
-    id: '1',
-    name: 'Golf Foundation',
-    description: 'Getting more young people into golf across the UK.',
-    imageUrl: 'https://placehold.co/400x240/1a1a2e/e94560?text=Golf+Foundation',
-    totalRaised: 48200,
-  },
-  {
-    id: '2',
-    name: 'Veterans Golf Society',
-    description: 'Supporting veterans through the mental health benefits of golf.',
-    imageUrl: 'https://placehold.co/400x240/1a1a2e/e94560?text=Veterans+Golf',
-    totalRaised: 32100,
-  },
-  {
-    id: '3',
-    name: 'Caddy Scholarship Fund',
-    description: 'Providing education scholarships for caddies and their families.',
-    imageUrl: 'https://placehold.co/400x240/1a1a2e/e94560?text=Caddy+Fund',
-    totalRaised: 27600,
-  },
-];
-
 const TESTIMONIALS: Testimonial[] = [
   {
     id: '1',
@@ -171,6 +148,7 @@ const formatNumber = (value: number, prefix = ''): string => {
 
 export const HomePage = () => {
   const navigate = useNavigate();
+  const { data: featuredApi = [] } = useFeaturedCharities();
   const heroRef = useRef<HTMLElement | null>(null);
   const statsSectionRef = useRef<HTMLElement | null>(null);
   const statsValueRefs = useRef<Array<HTMLParagraphElement | null>>([]);
@@ -186,6 +164,18 @@ export const HomePage = () => {
         amount: Math.round((MONTHLY_POOL * tier.percentage) / 100),
       })),
     [],
+  );
+
+  const featuredCharities = useMemo<Charity[]>(
+    () =>
+      featuredApi.map((charity) => ({
+        id: charity.id,
+        name: charity.name,
+        description: charity.description,
+        imageUrl: charity.imageUrl,
+        totalRaised: 0,
+      })),
+    [featuredApi],
   );
 
   useGSAP(
@@ -459,7 +449,7 @@ export const HomePage = () => {
               whileInView="animate"
               viewport={{ once: true, margin: '-60px' }}
             >
-              {FEATURED_CHARITIES.map((charity) => (
+              {featuredCharities.map((charity) => (
                 <motion.article
                   key={charity.id}
                   className={styles.charityCard}

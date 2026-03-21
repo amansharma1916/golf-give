@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { PageHeader } from '../../../components/layout';
 import { Badge, Button, Input, Modal } from '../../../components/ui';
+import { useAdminCharityStats, useCreateCharity, useUpdateCharity } from '../../../hooks/useAdmin';
 import { containerVariants, itemVariants } from '../../../lib/animations';
 import { formatDate } from '../../../lib/utils';
 import { useToastStore } from '../../../stores/toastStore';
@@ -89,6 +90,9 @@ const StarIcon = ({ filled }: { filled: boolean }) => <span aria-hidden="true">{
 
 export const AdminCharitiesPage = () => {
   const addToast = useToastStore((state) => state.addToast);
+  const { data: charityStats = [] } = useAdminCharityStats();
+  const createCharityMutation = useCreateCharity();
+  const updateCharityMutation = useUpdateCharity();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeOnly, setActiveOnly] = useState(false);
@@ -122,6 +126,37 @@ export const AdminCharitiesPage = () => {
       return matchSearch && matchActive;
     });
   }, [activeOnly, charities, searchQuery]);
+
+  useEffect(() => {
+    if (charityStats.length === 0) {
+      return;
+    }
+
+    setCharities(
+      charityStats.map((charity: {
+        id: string;
+        name: string;
+        description: string;
+        imageUrl: string;
+        websiteUrl: string;
+        isFeatured: boolean;
+        isActive: boolean;
+        createdAt?: string;
+      }) => ({
+        id: charity.id,
+        name: charity.name,
+        category: 'Community Sport',
+        description: charity.description,
+        imageUrl: charity.imageUrl,
+        websiteUrl: charity.websiteUrl,
+        isFeatured: charity.isFeatured,
+        isActive: charity.isActive,
+        createdAt: charity.createdAt ?? new Date().toISOString(),
+        supporters: 0,
+        contributed: 0,
+      })),
+    );
+  }, [charityStats]);
 
   useEffect(() => {
     const totalContributed = 284500;
@@ -193,10 +228,11 @@ export const AdminCharitiesPage = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const saveForm = () => {
+  const saveForm = async () => {
     if (!validateForm()) return;
 
     if (editingCharityId) {
+      await updateCharityMutation.mutateAsync({ id: editingCharityId, payload: form });
       setCharities((prev) =>
         prev.map((charity) =>
           charity.id === editingCharityId
@@ -206,6 +242,7 @@ export const AdminCharitiesPage = () => {
       );
       addToast({ type: 'success', message: 'Charity updated successfully' });
     } else {
+      await createCharityMutation.mutateAsync(form);
       const newItem: CharityRecord = {
         id: `new-${Date.now()}`,
         name: form.name,

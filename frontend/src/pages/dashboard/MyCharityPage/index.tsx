@@ -1,64 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { PageHeader } from '../../../components/layout';
 import { Badge, Button, Input } from '../../../components/ui';
+import { useCharities, useUpdateMyCharity } from '../../../hooks/useCharities';
 import { containerVariants, itemVariants, slideUpVariants } from '../../../lib/animations';
-import { MOCK_CHARITY_CONTRIBUTION, MOCK_CHARITY_STATS } from '../../../lib/mockData';
 import { formatCurrency } from '../../../lib/utils';
 import { useToastStore } from '../../../stores/toastStore';
 import styles from './MyCharityPage.module.css';
-
-const charities = [
-  {
-    id: '1',
-    name: 'Golf Foundation',
-    category: 'Youth & Education',
-    description:
-      'Getting more young people into golf across the UK through school and club partnerships that make participation easier and more inclusive.',
-    imageUrl: 'https://placehold.co/900x520/1a1a2e/e94560?text=Golf+Foundation',
-    websiteUrl: 'https://golf-foundation.org.uk',
-  },
-  {
-    id: '2',
-    name: 'Veterans Golf Society',
-    category: 'Veterans',
-    description: 'Supporting veteran wellbeing through golf access, social sessions and tailored support programs.',
-    imageUrl: 'https://placehold.co/900x520/1a1a2e/e94560?text=Veterans+Golf',
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '3',
-    name: 'Caddy Scholarship Fund',
-    category: 'Education',
-    description: 'Funding educational scholarships for caddies and their families with long-term support pathways.',
-    imageUrl: 'https://placehold.co/900x520/1a1a2e/e94560?text=Caddy+Scholarship',
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '4',
-    name: 'Greenkeepers Welfare Trust',
-    category: 'Community',
-    description: 'Practical and financial support for greenkeepers and golf course staff across the UK.',
-    imageUrl: 'https://placehold.co/900x520/1a1a2e/e94560?text=Greenkeepers',
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '5',
-    name: 'Mind on the Fairway',
-    category: 'Mental Health',
-    description: 'Weekly golf-based sessions focused on confidence, routine and mental wellbeing recovery.',
-    imageUrl: 'https://placehold.co/900x520/1a1a2e/e94560?text=Mind+on+Fairway',
-    websiteUrl: 'https://example.com',
-  },
-  {
-    id: '6',
-    name: 'Links to Nature',
-    category: 'Environment',
-    description: 'Helping clubs build biodiversity and long-term ecological impact around golf courses.',
-    imageUrl: 'https://placehold.co/900x520/1a1a2e/e94560?text=Links+to+Nature',
-    websiteUrl: 'https://example.com',
-  },
-];
 
 const ringSize = 80;
 const ringStroke = 8;
@@ -67,14 +15,45 @@ const ringCircumference = 2 * Math.PI * ringRadius;
 
 export const MyCharityPage = () => {
   const addToast = useToastStore((state) => state.addToast);
-  const [selectedCharityId, setSelectedCharityId] = useState(MOCK_CHARITY_CONTRIBUTION.charityId);
-  const [savedCharityId, setSavedCharityId] = useState(MOCK_CHARITY_CONTRIBUTION.charityId);
+  const { data: charitiesData = [] } = useCharities();
+  const updateMyCharityMutation = useUpdateMyCharity();
+  const charities = useMemo(
+    () =>
+      charitiesData.map((charity) => ({
+        id: charity.id,
+        name: charity.name,
+        category: charity.isFeatured ? 'Featured' : 'Community',
+        description: charity.description,
+        imageUrl: charity.imageUrl,
+        websiteUrl: charity.websiteUrl,
+      })),
+    [charitiesData],
+  );
+
+  const initialCharityId = charities[0]?.id ?? '';
+  const [selectedCharityId, setSelectedCharityId] = useState(initialCharityId);
+  const [savedCharityId, setSavedCharityId] = useState(initialCharityId);
   const [searchQuery, setSearchQuery] = useState('');
-  const [percentage, setPercentage] = useState(MOCK_CHARITY_CONTRIBUTION.percentage);
+  const [percentage, setPercentage] = useState(10);
   const [donationPreset, setDonationPreset] = useState<number | null>(10);
   const [customDonation, setCustomDonation] = useState('');
 
-  const selectedCharity = charities.find((charity) => charity.id === savedCharityId) ?? charities[0];
+  const selectedCharity =
+    charities.find((charity) => charity.id === savedCharityId) ?? {
+      id: '',
+      name: 'Charity',
+      category: 'Community',
+      description: '',
+      imageUrl: '',
+      websiteUrl: '#',
+    };
+
+  useEffect(() => {
+    if (!selectedCharityId && charities[0]?.id) {
+      setSelectedCharityId(charities[0].id);
+      setSavedCharityId(charities[0].id);
+    }
+  }, [charities, selectedCharityId]);
 
   const filteredCharities = useMemo(() => {
     return charities.filter((charity) => {
@@ -87,23 +66,37 @@ export const MyCharityPage = () => {
     });
   }, [searchQuery]);
 
-  const charityStats = MOCK_CHARITY_STATS.find((item) => item.charityId === selectedCharity.id);
+  const charityStats = {
+    totalAllTime: 0,
+    memberCount: 0,
+  };
   const monthlyBase = 9.99;
   const monthlyAmount = Number(((monthlyBase * percentage) / 100).toFixed(2));
-  const totalContributed = Number((MOCK_CHARITY_CONTRIBUTION.totalContributed + monthlyAmount).toFixed(2));
+  const totalContributed = Number(monthlyAmount.toFixed(2));
   const ringProgress = ringCircumference - (percentage / 100) * ringCircumference;
 
-  const handleSaveCharity = () => {
-    window.setTimeout(() => {
+  const handleSaveCharity = async () => {
+    try {
+      await updateMyCharityMutation.mutateAsync({
+        charityId: selectedCharityId,
+        contributionPercentage: percentage,
+      });
       setSavedCharityId(selectedCharityId);
-      addToast({ type: 'success', message: 'Charity updated successfully' });
-    }, 800);
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update charity' });
+    }
   };
 
-  const handleUpdateContribution = () => {
-    window.setTimeout(() => {
+  const handleUpdateContribution = async () => {
+    try {
+      await updateMyCharityMutation.mutateAsync({
+        charityId: savedCharityId,
+        contributionPercentage: percentage,
+      });
       addToast({ type: 'success', message: 'Contribution updated' });
-    }, 600);
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update contribution' });
+    }
   };
 
   const handleDonate = () => {

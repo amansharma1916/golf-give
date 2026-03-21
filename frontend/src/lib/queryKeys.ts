@@ -1,0 +1,16 @@
+export const QUERY_KEYS = {
+  me: ['me'] as const,
+  scores: ['scores'] as const,
+  draws: ['draws'] as const,
+  drawById: (id: string) => ['draws', id] as const,
+  upcomingDraw: ['draws', 'upcoming'] as const,
+  charities: ['charities'] as const,
+  featuredCharities: ['charities', 'featured'] as const,
+  charityById: (id: string) => ['charities', id] as const,
+  subscription: ['subscription'] as const,
+  winnings: ['winnings'] as const,
+  adminUsers: ['admin', 'users'] as const,
+  adminDraws: ['admin', 'draws'] as const,
+  adminWinners: ['admin', 'winners'] as const,
+  adminReports: ['admin', 'reports'] as const,
+} as const;

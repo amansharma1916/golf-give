@@ -4,12 +4,35 @@ import gsap from 'gsap';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../../../components/layout';
 import { Tabs, Badge, Modal, Button } from '../../../components/ui';
+import { useDraws } from '../../../hooks/useDraws';
+import { useScores } from '../../../hooks/useScores';
+import { useWinnings } from '../../../hooks/useWinnings';
 import { pageVariants } from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
-import { MOCK_SCORES, MOCK_ALL_DRAWS } from '../../../lib/mockData';
 import { formatCurrency, formatMonth, cn } from '../../../lib/utils';
 import styles from './DrawsPage.module.css';
-import type { DrawResult } from '../../../lib/mockData';
+
+type DrawResult = {
+  id: string;
+  month: string;
+  drawType: 'random' | 'algorithmic';
+  winningNumbers: number[];
+  totalPool: number;
+  activeMembers: number;
+  rolledOverAmount: number;
+  myEntry: {
+    scoreSnapshot: number[];
+    matchCount: number;
+    isWinner: boolean;
+    prizeAmount: number | null;
+    payoutStatus: 'pending' | 'verified' | 'paid' | null;
+  };
+  winners: {
+    fiveMatch: number;
+    fourMatch: number;
+    threeMatch: number;
+  };
+};
 
 const DiceIcon = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
@@ -82,8 +105,7 @@ const CountdownTimer = () => {
   );
 };
 
-const UpcomingDrawSection = () => {
-  const userScores = MOCK_SCORES;
+const UpcomingDrawSection = ({ userScores }: { userScores: number[] }) => {
   const poolAmount = 34180;
   const activeMembers = 3420;
 
@@ -134,9 +156,9 @@ const UpcomingDrawSection = () => {
                 </div>
                 <div className={styles.myEntryLabel}>Your 5 draw numbers:</div>
                 <div className={styles.myNumberPills}>
-                  {userScores.map((score: typeof MOCK_SCORES[0], index: number) => (
+                  {userScores.map((score, index) => (
                     <motion.div
-                      key={score.id}
+                      key={`${score}-${index}`}
                       className={styles.myNumberPill}
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
@@ -147,7 +169,7 @@ const UpcomingDrawSection = () => {
                         delay: index * 0.08,
                       }}
                     >
-                      {score.score}
+                      {score}
                     </motion.div>
                   ))}
                 </div>
@@ -419,7 +441,7 @@ const DrawDetailPanel = ({
   );
 };
 
-const PastResultsSection = () => {
+const PastResultsSection = ({ draws }: { draws: DrawResult[] }) => {
   const [selectedDraw, setSelectedDraw] = useState<DrawResult | null>(null);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [isRevealPlaying, setIsRevealPlaying] = useState(false);
@@ -467,8 +489,8 @@ const PastResultsSection = () => {
   };
 
   useEffect(() => {
-    setSelectedDraw(MOCK_ALL_DRAWS[0]);
-  }, []);
+    setSelectedDraw(draws[0] ?? null);
+  }, [draws]);
 
   useEffect(() => {
     if (!selectedDraw) return;
@@ -505,7 +527,7 @@ const PastResultsSection = () => {
       <div className={styles.resultsLayout}>
         <div className={styles.resultsListCol}>
           <div className={styles.resultsList}>
-            {MOCK_ALL_DRAWS.map((draw: DrawResult) => (
+            {draws.map((draw: DrawResult) => (
               <motion.div
                 key={draw.id}
                 className={cn(styles.resultsListItem, selectedDraw?.id === draw.id && styles.resultsListItemSelected, selectedDraw?.id !== draw.id && styles.resultsListItemUnselected)}
@@ -592,7 +614,48 @@ const PastResultsSection = () => {
 };
 
 export const DrawsPage = () => {
+  const { data: draws = [] } = useDraws();
+  const { data: scores = [] } = useScores();
+  const { data: winnings = [] } = useWinnings();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'results'>('upcoming');
+
+  const myScores = scores.slice(0, 5).map((score) => score.score);
+
+  const normalizedDraws: DrawResult[] = draws.map(
+    (draw: {
+      id: string;
+      month: string;
+      drawType: 'random' | 'algorithmic';
+      winningNumbers: number[];
+      jackpotAmount: number;
+      rolledOverAmount: number;
+    }) => {
+      const matchCount = draw.winningNumbers.filter((num) => myScores.includes(num)).length;
+      const winningRecord = winnings.find((entry: { drawMonth?: string }) => entry.drawMonth === draw.month);
+
+      return {
+        id: draw.id,
+        month: draw.month,
+        drawType: draw.drawType,
+        winningNumbers: draw.winningNumbers,
+        totalPool: draw.jackpotAmount + draw.rolledOverAmount,
+        activeMembers: 0,
+        rolledOverAmount: draw.rolledOverAmount,
+        winners: {
+          fiveMatch: 0,
+          fourMatch: 0,
+          threeMatch: 0,
+        },
+        myEntry: {
+          scoreSnapshot: myScores,
+          matchCount,
+          isWinner: matchCount >= 3,
+          prizeAmount: winningRecord?.amount ?? null,
+          payoutStatus: winningRecord?.status ?? null,
+        },
+      };
+    },
+  );
 
   return (
     <>
@@ -604,7 +667,7 @@ export const DrawsPage = () => {
       <Tabs
         tabs={[
           { id: 'upcoming', label: 'Upcoming draw' },
-          { id: 'results', label: 'Past results', count: MOCK_ALL_DRAWS.length },
+          { id: 'results', label: 'Past results', count: normalizedDraws.length },
         ]}
         activeTab={activeTab}
         onChange={(tab) => setActiveTab(tab as 'upcoming' | 'results')}
@@ -613,11 +676,11 @@ export const DrawsPage = () => {
       <AnimatePresence mode="wait">
         {activeTab === 'upcoming' ? (
           <motion.div key="upcoming" variants={pageVariants} initial="initial" animate="animate" exit="exit">
-            <UpcomingDrawSection />
+            <UpcomingDrawSection userScores={myScores} />
           </motion.div>
         ) : (
           <motion.div key="results" variants={pageVariants} initial="initial" animate="animate" exit="exit">
-            <PastResultsSection />
+            <PastResultsSection draws={normalizedDraws} />
           </motion.div>
         )}
       </AnimatePresence>

@@ -17,8 +17,8 @@ import {
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { PageHeader } from '../../../components/layout';
 import { Badge, Button } from '../../../components/ui';
+import { useAdminCharityStats, useAdminReports } from '../../../hooks/useAdmin';
 import { containerVariants, fadeInVariants, itemVariants } from '../../../lib/animations';
-import { MOCK_ADMIN_STATS, MOCK_CHARITY_STATS } from '../../../lib/mockData';
 import { useToastStore } from '../../../stores/toastStore';
 import styles from './AdminReportsPage.module.css';
 
@@ -56,6 +56,8 @@ const gradientClasses = [styles.metricOne, styles.metricTwo, styles.metricThree,
 
 export const AdminReportsPage = () => {
   const addToast = useToastStore((state) => state.addToast);
+  const { data: reports } = useAdminReports();
+  const { data: charityStatsData = [] } = useAdminCharityStats();
   const [chartsVisible, setChartsVisible] = useState(false);
 
   const revenueRef = useRef<HTMLSpanElement>(null);
@@ -63,15 +65,18 @@ export const AdminReportsPage = () => {
   const impactRef = useRef<HTMLSpanElement>(null);
   const poolRef = useRef<HTMLSpanElement>(null);
 
-  const totalMonthly = MOCK_ADMIN_STATS.monthlyRevenue + MOCK_ADMIN_STATS.yearlyRevenue;
-  const totalDonationsMonth = MOCK_CHARITY_STATS.reduce((sum, item) => sum + item.monthlyAmount, 0);
+  const totalMonthly = (reports?.monthlyRevenue ?? 0) + (reports?.yearlyRevenue ?? 0);
+  const totalDonationsMonth = charityStatsData.reduce(
+    (sum: number, item: { monthlyAmount?: number }) => sum + (item.monthlyAmount ?? 0),
+    0,
+  );
 
   useEffect(() => {
     const rows = [
       { ref: revenueRef, value: totalMonthly, currency: true },
-      { ref: subscribersRef, value: MOCK_ADMIN_STATS.activeSubscribers, currency: false },
-      { ref: impactRef, value: MOCK_ADMIN_STATS.totalCharityAllTime, currency: true },
-      { ref: poolRef, value: MOCK_ADMIN_STATS.totalPrizePoolAllTime, currency: true },
+      { ref: subscribersRef, value: reports?.activeSubscribers ?? 0, currency: false },
+      { ref: impactRef, value: reports?.totalCharityAllTime ?? 0, currency: true },
+      { ref: poolRef, value: reports?.totalPrizePoolAllTime ?? 0, currency: true },
     ];
 
     rows.forEach(({ ref, value, currency }) => {
@@ -93,7 +98,7 @@ export const AdminReportsPage = () => {
         },
       });
     });
-  }, [totalMonthly]);
+  }, [reports, totalMonthly]);
 
   const lineData = useMemo(() => ({
     labels: months,
@@ -139,15 +144,15 @@ export const AdminReportsPage = () => {
   ];
 
   const doughnutData = useMemo(() => ({
-    labels: MOCK_CHARITY_STATS.map((item) => item.charityName),
+    labels: charityStatsData.map((item: { charityName?: string; name?: string }) => item.charityName ?? item.name ?? 'Charity'),
     datasets: [
       {
-        data: MOCK_CHARITY_STATS.map((item) => item.monthlyAmount),
+        data: charityStatsData.map((item: { monthlyAmount?: number }) => item.monthlyAmount ?? 0),
         backgroundColor: charityColors,
         borderWidth: 0,
       },
     ],
-  }), []);
+  }), [charityStatsData]);
 
   return (
     <div className={styles.page}>
@@ -247,13 +252,13 @@ export const AdminReportsPage = () => {
           </div>
 
           <div className={styles.charityLegend}>
-            {MOCK_CHARITY_STATS.map((charity, index) => {
-              const percent = Math.round((charity.monthlyAmount / totalDonationsMonth) * 100);
+            {charityStatsData.map((charity: { charityId: string; charityName?: string; name?: string; monthlyAmount?: number; memberCount?: number }, index: number) => {
+              const percent = totalDonationsMonth > 0 ? Math.round(((charity.monthlyAmount ?? 0) / totalDonationsMonth) * 100) : 0;
               return (
                 <div key={charity.charityId} className={styles.legendRow}>
                   <div className={styles.legendMeta}>
-                    <span className={styles.legendName}><span className={styles.legendDot} style={{ background: charityColors[index] }} />{charity.charityName}</span>
-                    <span>£{charity.monthlyAmount.toFixed(0)} · {charity.memberCount}</span>
+                    <span className={styles.legendName}><span className={styles.legendDot} style={{ background: charityColors[index] }} />{charity.charityName ?? charity.name ?? 'Charity'}</span>
+                    <span>£{(charity.monthlyAmount ?? 0).toFixed(0)} · {charity.memberCount ?? 0}</span>
                   </div>
                   <div className={styles.legendBar}>
                     <motion.div className={styles.legendBarFill} style={{ width: `${percent}%`, background: charityColors[index] }} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} />

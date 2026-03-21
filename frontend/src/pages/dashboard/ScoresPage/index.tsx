@@ -7,9 +7,9 @@ import {
   itemVariants,
   fadeInVariants,
 } from '../../../lib/animations';
+import { useAddScore, useDeleteScore, useScores, useUpdateScore } from '../../../hooks/useScores';
 import { formatDate, cn } from '../../../lib/utils';
 import { useToastStore } from '../../../stores/toastStore';
-import { MOCK_SCORES } from '../../../lib/mockData';
 import type { Score } from '../../../types';
 import styles from './ScoresPage.module.css';
 
@@ -65,7 +65,10 @@ const GolfBallIcon = ({ size = 80 }: { size?: number }) => (
 );
 
 export const ScoresPage = () => {
-  const [scores, setScores] = useState<Score[]>(MOCK_SCORES);
+  const { data: scores = [] } = useScores();
+  const addScoreMutation = useAddScore();
+  const updateScoreMutation = useUpdateScore();
+  const deleteScoreMutation = useDeleteScore();
   const [isAddingScore, setIsAddingScore] = useState(false);
   const [editingScoreId, setEditingScoreId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -121,44 +124,22 @@ export const ScoresPage = () => {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-
-    const newScore: Score = {
-      id: `score-${Date.now()}`,
-      userId: 'mock-user-1',
-      score: parseInt(formData.score, 10),
-      playedAt: formData.playedAt,
-      createdAt: new Date().toISOString(),
-    };
-
-    const wasFullBefore = scores.length === 5;
-    let updatedScores = [newScore, ...scores];
-
-    if (updatedScores.length > 5) {
-      updatedScores.pop();
-    }
-
-    updatedScores.sort(
-      (a, b) =>
-        new Date(b.playedAt).getTime() - new Date(a.playedAt).getTime(),
-    );
-
-    setScores(updatedScores);
-    setIsAddingScore(false);
-    setFormData({ score: '', playedAt: '' });
-    setFormErrors({});
-    setIsSubmitting(false);
-
-    if (wasFullBefore) {
-      addToast({
-        message: 'Score added. Your oldest score was removed.',
-        type: 'warning',
+    try {
+      await addScoreMutation.mutateAsync({
+        score: parseInt(formData.score, 10),
+        playedAt: formData.playedAt,
       });
-    } else {
+
+      setIsAddingScore(false);
+      setFormData({ score: '', playedAt: '' });
+      setFormErrors({});
+    } catch {
       addToast({
-        message: 'Score added successfully',
-        type: 'success',
+        message: 'Failed to add score. Try again.',
+        type: 'error',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -180,43 +161,47 @@ export const ScoresPage = () => {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    try {
+      if (!editingScoreId) {
+        return;
+      }
 
-    setScores((prev) =>
-      prev.map((score) =>
-        score.id === editingScoreId
-          ? {
-              ...score,
-              score: parseInt(formData.score, 10),
-              playedAt: formData.playedAt,
-            }
-          : score,
-      ),
-    );
+      await updateScoreMutation.mutateAsync({
+        id: editingScoreId,
+        payload: {
+          score: parseInt(formData.score, 10),
+          playedAt: formData.playedAt,
+        },
+      });
 
-    setEditingScoreId(null);
-    setFormData({ score: '', playedAt: '' });
-    setFormErrors({});
-    setIsSubmitting(false);
-    addToast({
-      message: 'Score updated',
-      type: 'success',
-    });
+      setEditingScoreId(null);
+      setFormData({ score: '', playedAt: '' });
+      setFormErrors({});
+    } catch {
+      addToast({
+        message: 'Failed to update score.',
+        type: 'error',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDeleteScore = async () => {
     if (!deleteConfirmId) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    setScores((prev) => prev.filter((s) => s.id !== deleteConfirmId));
-    setDeleteConfirmId(null);
-    setIsSubmitting(false);
-    addToast({
-      message: 'Score deleted',
-      type: 'warning',
-    });
+    try {
+      await deleteScoreMutation.mutateAsync(deleteConfirmId);
+      setDeleteConfirmId(null);
+    } catch {
+      addToast({
+        message: 'Failed to delete score.',
+        type: 'error',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const cancelEdit = () => {

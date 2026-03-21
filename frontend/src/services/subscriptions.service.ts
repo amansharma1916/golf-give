@@ -1,43 +1,36 @@
 import api from '../lib/axios';
-import type { ApiResponse } from '../types/api.types';
 import type { Subscription } from '../types';
-import { mapBackendSubscription } from './auth.service';
 
-type BackendSubscription = {
-  id: string;
-  user_id: string;
-  plan: 'monthly' | 'yearly';
-  status: 'active' | 'inactive' | 'cancelled' | 'lapsed';
-  current_period_end: string;
+type ApiSubscription = Subscription & {
+  user_id?: string;
+  current_period_end?: string;
 };
 
-const getSuccessData = <T>(response: ApiResponse<T>): T => {
-  if (!response.success) {
-    throw new Error(response.error.message);
-  }
-
-  return response.data;
+const normalizeSubscription = (subscription: ApiSubscription): Subscription => {
+  return {
+    id: subscription.id,
+    userId: subscription.userId ?? subscription.user_id ?? '',
+    plan: subscription.plan,
+    status: subscription.status,
+    currentPeriodEnd: subscription.currentPeriodEnd ?? subscription.current_period_end ?? new Date().toISOString(),
+  };
 };
 
-export const getSubscriptionStatus = async (): Promise<Subscription> => {
-  const { data } = await api.get<ApiResponse<BackendSubscription>>('/subscriptions/status');
-  const payload = getSuccessData(data);
-  return mapBackendSubscription(payload);
+export const getMySubscription = async (): Promise<Subscription> => {
+  const res = await api.get('/subscriptions/status');
+  return normalizeSubscription(res.data.data as ApiSubscription);
 };
 
-export const activateSubscription = async (
-  plan: 'monthly' | 'yearly'
-): Promise<Subscription> => {
-  const { data } = await api.post<ApiResponse<BackendSubscription>>('/subscriptions/mock-checkout', {
-    plan,
-  });
-  const payload = getSuccessData(data);
-  return mapBackendSubscription(payload);
+export const mockCheckout = async (plan: 'monthly' | 'yearly'): Promise<Subscription> => {
+  const res = await api.post('/subscriptions/mock-checkout', { plan });
+  return normalizeSubscription(res.data.data as ApiSubscription);
 };
 
-export const cancelSubscription = async (): Promise<void> => {
-  const { data } = await api.post<ApiResponse<{ message: string }>>('/subscriptions/mock-cancel');
-  if (!data.success) {
-    throw new Error(data.error.message);
-  }
+export const mockCancel = async (): Promise<void> => {
+  await api.post('/subscriptions/mock-cancel');
+};
+
+export const switchPlan = async (plan: 'monthly' | 'yearly'): Promise<Subscription> => {
+  const res = await api.post('/subscriptions/switch-plan', { plan });
+  return normalizeSubscription(res.data.data as ApiSubscription);
 };

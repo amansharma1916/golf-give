@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../ui';
 import { containerVariants, itemVariants } from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
+import { signOut } from '../../../services/auth.service';
 import { cn } from '../../../lib/utils';
 import { useUserStore } from '../../../stores/userStore';
 import styles from './Sidebar.module.css';
@@ -140,9 +141,15 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
     return location.pathname.startsWith(itemPath);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch {
+      // Even if Supabase sign-out fails, clear local auth state.
+    }
+
     logout();
-    navigate(ROUTES.HOME);
+    navigate(ROUTES.LOGIN);
   };
 
   return (

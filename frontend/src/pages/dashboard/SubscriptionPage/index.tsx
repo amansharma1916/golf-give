@@ -3,9 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../../components/layout';
 import { Badge, Button, Modal, Spinner } from '../../../components/ui';
+import { useMockCancel, useSubscription, useSwitchPlan } from '../../../hooks/useSubscription';
+import { useWinnings } from '../../../hooks/useWinnings';
 import { slideUpVariants } from '../../../lib/animations';
 import { PLANS, ROUTES, type PlanId } from '../../../lib/constants';
-import { MOCK_MEMBER_USER, MOCK_SUBSCRIPTION } from '../../../lib/mockData';
 import { formatDate } from '../../../lib/utils';
 import { useToastStore } from '../../../stores/toastStore';
 import { useUserStore } from '../../../stores/userStore';
@@ -17,24 +18,34 @@ const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
   </motion.span>
 );
 
-const summaryItems = [
-  { label: 'Draws entered', value: '18 draws' },
-  { label: 'Total won', value: '£839.34' },
-];
-
 export const SubscriptionPage = () => {
   const navigate = useNavigate();
   const addToast = useToastStore((state) => state.addToast);
+  const { data: subscriptionData } = useSubscription();
+  const { data: winnings = [] } = useWinnings();
+  const { mutateAsync: switchPlan } = useSwitchPlan();
+  const { mutateAsync: cancelSubscriptionMutation } = useMockCancel();
   const user = useUserStore((state) => state.user);
-  const subscription = useUserStore((state) => state.subscription);
   const setSubscription = useUserStore((state) => state.setSubscription);
 
-  const activeUser = user ?? MOCK_MEMBER_USER;
-  const activeSubscription = subscription ?? MOCK_SUBSCRIPTION;
+  const activeUser = user;
+  const activeSubscription = subscriptionData;
 
-  const [selectedPlan, setSelectedPlan] = useState<PlanId>(activeSubscription.plan);
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>(activeSubscription?.plan ?? 'monthly');
   const [isUpdatingPlan, setIsUpdatingPlan] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
+
+  const summaryItems = [
+    { label: 'Draws entered', value: `${winnings.length} draws` },
+    {
+      label: 'Total won',
+      value: `£${winnings.reduce((sum: number, entry: { amount?: number }) => sum + (entry.amount ?? 0), 0).toFixed(2)}`,
+    },
+  ];
+
+  if (!activeSubscription || !activeUser) {
+    return null;
+  }
 
   const renewalDate = formatDate(activeSubscription.currentPeriodEnd);
   const isPlanChanged = selectedPlan !== activeSubscription.plan;
@@ -58,11 +69,8 @@ export const SubscriptionPage = () => {
     if (!isPlanChanged) return;
 
     setIsUpdatingPlan(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 1000));
-    setSubscription({
-      ...activeSubscription,
-      plan: selectedPlan,
-    });
+    await switchPlan(selectedPlan);
+    setSubscription({ ...activeSubscription, plan: selectedPlan });
     addToast({ type: 'success', message: `Plan updated to ${PLANS[selectedPlan].label} successfully!` });
     setIsUpdatingPlan(false);
   };
@@ -71,11 +79,8 @@ export const SubscriptionPage = () => {
 
   const cancelSubscription = async () => {
     setIsUpdatingPlan(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 1000));
-    setSubscription({
-      ...activeSubscription,
-      status: 'cancelled',
-    });
+    await cancelSubscriptionMutation();
+    setSubscription({ ...activeSubscription, status: 'cancelled' });
     setIsCancelOpen(false);
     addToast({
       type: 'warning',

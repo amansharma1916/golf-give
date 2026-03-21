@@ -4,6 +4,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Avatar, Button } from '../../ui';
 import { containerVariants, dropdownVariants, itemVariants } from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
+import { signOut } from '../../../services/auth.service';
 import { cn } from '../../../lib/utils';
 import { useUserStore } from '../../../stores/userStore';
 import styles from './Navbar.module.css';
@@ -112,11 +113,17 @@ export const Navbar = ({ transparent = false }: NavbarProps) => {
     };
   }, [isMobileOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch {
+      // Even if Supabase sign-out fails, clear local auth state.
+    }
+
     logout();
     setIsDropdownOpen(false);
     setIsMobileOpen(false);
-    navigate(ROUTES.HOME);
+    navigate(ROUTES.LOGIN);
   };
 
   return (

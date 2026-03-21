@@ -5,9 +5,9 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../../components/layout';
 import { Badge, Button, Modal, Spinner } from '../../../components/ui';
+import { useAdminDraws, useAdminUsers, useConfigureDrawType, usePublishDraw, useSimulateDraw } from '../../../hooks/useAdmin';
 import { containerVariants, itemVariants, slideUpVariants } from '../../../lib/animations';
 import { ROUTES } from '../../../lib/constants';
-import { MOCK_ADMIN_DRAWS, MOCK_ALL_USERS } from '../../../lib/mockData';
 import { formatCurrency, formatMonth } from '../../../lib/utils';
 import { useToastStore } from '../../../stores/toastStore';
 import styles from './AdminDrawsPage.module.css';
@@ -16,6 +16,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 type DrawType = 'random' | 'algorithmic';
 type AlgorithmMode = 'most_common' | 'least_common';
+
+type ProjectedWinner = {
+  id: string;
+  fullName: string;
+  scores: number[];
+  matchCount: number;
+};
 
 const processingSteps = ['Calculating winners...', 'Updating prize pools...', 'Sending notifications...'];
 
@@ -30,6 +37,11 @@ const generateRandomDrawNumbers = (): number[] => {
 export const AdminDrawsPage = () => {
   const navigate = useNavigate();
   const addToast = useToastStore((state) => state.addToast);
+  const { data: adminDraws = [] } = useAdminDraws();
+  const { data: adminUsers = [] } = useAdminUsers();
+  const simulateDrawMutation = useSimulateDraw();
+  const publishDrawMutation = usePublishDraw();
+  const configureDrawTypeMutation = useConfigureDrawType();
 
   const [drawType, setDrawType] = useState<DrawType>('random');
   const [algorithmMode, setAlgorithmMode] = useState<AlgorithmMode>('most_common');
@@ -42,30 +54,39 @@ export const AdminDrawsPage = () => {
 
   const prizePoolRef = useRef<HTMLParagraphElement>(null);
 
-  const currentDraw = MOCK_ADMIN_DRAWS[0];
-  const publishedDraws = MOCK_ADMIN_DRAWS.filter((draw) => draw.status === 'published');
+  const currentDraw = adminDraws[0];
+  const publishedDraws = adminDraws.filter((draw: { status: string }) => draw.status === 'published');
 
-  const projectedWinners = useMemo(() => {
+  const projectedWinners = useMemo<ProjectedWinner[]>(() => {
     if (simulationResults.length === 0) return [];
 
-    return MOCK_ALL_USERS.filter((user) => {
+    return adminUsers.filter((user: { id: string; fullName: string; scores: number[] }) => {
       const matches = user.scores.filter((score) => simulationResults.includes(score));
       return matches.length >= 3;
-    }).map((user) => ({
-      ...user,
-      matchCount: user.scores.filter((score) => simulationResults.includes(score)).length,
-    }));
-  }, [simulationResults]);
+    }).map((user: { id: string; fullName: string; scores: number[] }) => {
+      const matchCount = user.scores.filter((score) => simulationResults.includes(score)).length;
+      return {
+        id: user.id,
+        fullName: user.fullName,
+        scores: user.scores,
+        matchCount,
+      };
+    });
+  }, [adminUsers, simulationResults]);
 
   const winnerCounts = useMemo(() => {
     return {
-      five: projectedWinners.filter((winner) => winner.matchCount >= 5).length,
-      four: projectedWinners.filter((winner) => winner.matchCount === 4).length,
-      three: projectedWinners.filter((winner) => winner.matchCount === 3).length,
+      five: projectedWinners.filter((winner: ProjectedWinner) => winner.matchCount >= 5).length,
+      four: projectedWinners.filter((winner: ProjectedWinner) => winner.matchCount === 4).length,
+      three: projectedWinners.filter((winner: ProjectedWinner) => winner.matchCount === 3).length,
     };
   }, [projectedWinners]);
 
   useEffect(() => {
+    if (!currentDraw) {
+      return;
+    }
+
     if (!prizePoolRef.current) return;
 
     const count = { value: 0 };
@@ -84,7 +105,15 @@ export const AdminDrawsPage = () => {
         }
       },
     });
-  }, [currentDraw.totalPool]);
+  }, [currentDraw]);
+
+  useEffect(() => {
+    if (!currentDraw) {
+      return;
+    }
+
+    configureDrawTypeMutation.mutate({ drawId: currentDraw.id, drawType });
+  }, [configureDrawTypeMutation, currentDraw, drawType]);
 
   useEffect(() => {
     if (!isPublishing) return;
@@ -96,6 +125,9 @@ export const AdminDrawsPage = () => {
 
     const publishTimer = window.setTimeout(() => {
       window.clearInterval(stepTimer);
+      if (currentDraw) {
+        publishDrawMutation.mutate(currentDraw.id);
+      }
       setIsPublishing(false);
       setShowPublishModal(false);
       setDrawStatus('published');
@@ -106,7 +138,7 @@ export const AdminDrawsPage = () => {
       window.clearInterval(stepTimer);
       window.clearTimeout(publishTimer);
     };
-  }, [addToast, isPublishing]);
+  }, [addToast, currentDraw, isPublishing, publishDrawMutation]);
 
   const countdown = useMemo(() => {
     const diff = Math.max(0, new Date('2026-04-30T23:59:59').getTime() - Date.now());
@@ -120,12 +152,23 @@ export const AdminDrawsPage = () => {
   }, []);
 
   const runSimulation = () => {
+    if (!currentDraw) {
+      return;
+    }
+
     setIsSimulating(true);
-    window.setTimeout(() => {
-      setSimulationResults(generateRandomDrawNumbers());
-      setIsSimulating(false);
-      addToast({ type: 'success', message: 'Simulation complete' });
-    }, 2000);
+    simulateDrawMutation
+      .mutateAsync(currentDraw.id)
+      .then((result: { winningNumbers?: number[] }) => {
+        setSimulationResults(result.winningNumbers ?? generateRandomDrawNumbers());
+      })
+      .catch(() => {
+        setSimulationResults(generateRandomDrawNumbers());
+        addToast({ type: 'error', message: 'Simulation failed' });
+      })
+      .finally(() => {
+        setIsSimulating(false);
+      });
   };
 
   const openPublish = () => {
@@ -146,9 +189,9 @@ export const AdminDrawsPage = () => {
       <section className={styles.controlCard}>
         <div className={styles.controlCardHeader}>
           <div className={styles.headerTop}>
-            <h3>April 2026 Draw</h3>
+            <h3>{currentDraw ? `${formatMonth(currentDraw.month)} Draw` : 'Upcoming Draw'}</h3>
             <div className={styles.headerBadges}>
-              <Badge variant="info" size="sm">Draw #19</Badge>
+              <Badge variant="info" size="sm">Draw</Badge>
               <Badge variant={drawStatus === 'pending' ? 'warning' : 'success'} size="sm">
                 {drawStatus === 'pending' ? 'Pending' : 'Published'}
               </Badge>
@@ -218,7 +261,7 @@ export const AdminDrawsPage = () => {
                     <div key={percent} className={styles.poolRow}>
                       <div className={styles.poolMeta}>
                         <span>{index === 0 ? '5-match' : index === 1 ? '4-match' : '3-match'}</span>
-                        <span>{formatCurrency(Math.round((currentDraw.totalPool * percent) / 100) * 100)}</span>
+                        <span>{formatCurrency(Math.round(((currentDraw?.totalPool ?? 0) * percent) / 100) * 100)}</span>
                       </div>
                       <div className={styles.poolTrack}>
                         <motion.div className={styles.poolFill} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} style={{ transformOrigin: 'left center', width: `${percent}%` }} />
@@ -290,7 +333,7 @@ export const AdminDrawsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {projectedWinners.map((winner) => (
+                  {projectedWinners.map((winner: ProjectedWinner) => (
                     <tr key={winner.id}>
                       <td>{winner.fullName}</td>
                       <td>{winner.matchCount}</td>
@@ -328,7 +371,7 @@ export const AdminDrawsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {publishedDraws.map((draw) => (
+            {publishedDraws.map((draw: { id: string; month: string; drawType: string; totalPool: number }) => (
               <tr key={draw.id}>
                 <td>{formatMonth(draw.month)}</td>
                 <td><Badge variant="info" size="sm">{draw.drawType}</Badge></td>
@@ -362,7 +405,7 @@ export const AdminDrawsPage = () => {
           <div className={styles.publishNumbers}>
             {simulationResults.map((num) => <span key={`publish-${num}`} className={styles.publishBall}>{num}</span>)}
           </div>
-          <p>This will notify {currentDraw.activeMembers.toLocaleString()} members by email.</p>
+          <p>This will notify {(currentDraw?.activeMembers ?? 0).toLocaleString()} members by email.</p>
         </div>
       </Modal>
 

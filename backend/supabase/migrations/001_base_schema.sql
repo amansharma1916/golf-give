@@ -1,4 +1,3 @@
--- Create users table
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
@@ -7,7 +6,6 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create subscriptions table
 CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -19,7 +17,6 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create charities table
 CREATE TABLE IF NOT EXISTS charities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -31,7 +28,6 @@ CREATE TABLE IF NOT EXISTS charities (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create charity_contributions table
 CREATE TABLE IF NOT EXISTS charity_contributions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

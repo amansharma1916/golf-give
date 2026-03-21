@@ -4,8 +4,8 @@ import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { PageHeader } from '../../../components/layout';
 import { Badge, Button, Spinner, Tabs } from '../../../components/ui';
+import { useUploadProof, useWinnings } from '../../../hooks/useWinnings';
 import { containerVariants, itemVariants, pageVariants } from '../../../lib/animations';
-import { MOCK_WINNINGS } from '../../../lib/mockData';
 import { cn, formatMonth } from '../../../lib/utils';
 import { useToastStore } from '../../../stores/toastStore';
 import styles from './WinningsPage.module.css';
@@ -15,6 +15,20 @@ gsap.registerPlugin(ScrollTrigger);
 type WinningsTab = 'overview' | 'history' | 'pending';
 type HistoryFilter = 'all' | 'paid' | 'pending' | 'verified';
 type HistorySort = 'newest' | 'largest' | 'oldest';
+
+type WinningsRecord = {
+  id: string;
+  drawMonth: string;
+  matchCount: number;
+  tier: 'three_match' | 'four_match' | 'five_match';
+  winningNumbers: number[];
+  myNumbers: number[];
+  amount: number;
+  status: 'pending' | 'verified' | 'paid';
+  proofUrl: string | null;
+  paidAt: string | null;
+  deadline: string | null;
+};
 
 const formatPounds = (amount: number): string => {
   return `£${amount.toFixed(2)}`;
@@ -41,6 +55,8 @@ const UploadIcon = () => (
 );
 
 export const WinningsPage = () => {
+  const { data: winningsData = [] } = useWinnings();
+  const uploadProofMutation = useUploadProof();
   const [activeTab, setActiveTab] = useState<WinningsTab>('overview');
   const [filter, setFilter] = useState<HistoryFilter>('all');
   const [sortBy, setSortBy] = useState<HistorySort>('newest');
@@ -58,7 +74,7 @@ export const WinningsPage = () => {
   const winRateRef = useRef<HTMLSpanElement>(null);
   const bestMatchRef = useRef<HTMLSpanElement>(null);
 
-  const winnings = MOCK_WINNINGS;
+  const winnings: WinningsRecord[] = winningsData.map((entry: WinningsRecord) => entry);
   const paidWinnings = winnings.filter((w) => w.status === 'paid');
   const pendingWinnings = winnings.filter((w) => w.status === 'pending');
 
@@ -140,33 +156,6 @@ export const WinningsPage = () => {
     });
   }, [bestMatch, totalPaid, totalPending, winRate]);
 
-  useEffect(() => {
-    if (!isUploading) return;
-
-    const progressValue = { value: 0 };
-    const tween = gsap.to(progressValue, {
-      value: 90,
-      duration: 1.4,
-      ease: 'power2.out',
-      onUpdate: () => setUploadProgress(Math.round(progressValue.value)),
-    });
-
-    const timer = window.setTimeout(() => {
-      setUploadProgress(100);
-      setIsUploading(false);
-      setIsSuccess(true);
-      addToast({
-        type: 'success',
-        message: "Proof submitted! We'll verify within 2-3 working days.",
-      });
-    }, 1700);
-
-    return () => {
-      tween.kill();
-      window.clearTimeout(timer);
-    };
-  }, [addToast, isUploading]);
-
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'history', label: 'Win history', count: winnings.length },
@@ -185,14 +174,39 @@ export const WinningsPage = () => {
     setIsSuccess(false);
   };
 
-  const submitProof = () => {
+  const submitProof = async () => {
     if (!file) {
       addToast({ type: 'warning', message: 'Please choose a proof file first.' });
       return;
     }
 
+    const pendingTarget = pendingWinnings[0];
+    if (!pendingTarget) {
+      addToast({ type: 'warning', message: 'No pending claim selected.' });
+      return;
+    }
+
     setIsUploading(true);
     setUploadProgress(0);
+
+    const progressValue = { value: 0 };
+    const tween = gsap.to(progressValue, {
+      value: 90,
+      duration: 1.4,
+      ease: 'power2.out',
+      onUpdate: () => setUploadProgress(Math.round(progressValue.value)),
+    });
+
+    try {
+      await uploadProofMutation.mutateAsync({ id: pendingTarget.id, file });
+      setUploadProgress(100);
+      setIsSuccess(true);
+    } catch {
+      addToast({ type: 'error', message: 'Upload failed. Please try again.' });
+    } finally {
+      tween.kill();
+      setIsUploading(false);
+    }
   };
 
   return (

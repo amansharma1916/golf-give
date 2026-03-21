@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from '../../../components/layout';
-import { Badge, Button, Input } from '../../../components/ui';
+import { Badge, Button, Input, Skeleton } from '../../../components/ui';
 import { containerVariants, itemVariants } from '../../../lib/animations';
 import { PLANS, ROUTES } from '../../../lib/constants';
-import { getMe, registerProfile, signUpWithPassword } from '../../../services/auth.service';
+import { useCharities } from '../../../hooks/useCharities';
+import { registerUser, signInWithPassword, signUpWithEmail } from '../../../services/auth.service';
 import { useToastStore } from '../../../stores/toastStore';
 import { useUserStore } from '../../../stores/userStore';
 import styles from './SignupPage.module.css';
@@ -30,27 +31,6 @@ type CharityOption = {
   category: string;
   description: string;
 };
-
-const CHARITY_OPTIONS: CharityOption[] = [
-  {
-    id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-    name: 'Red Cross',
-    category: 'Youth',
-    description: 'International humanitarian organization.',
-  },
-  {
-    id: 'f47ac10b-58cc-4372-a567-0e02b2c3d480',
-    name: 'Oxfam',
-    category: 'Mental Health',
-    description: 'Global charity fighting poverty.',
-  },
-  {
-    id: 'f47ac10b-58cc-4372-a567-0e02b2c3d481',
-    name: 'Doctors Without Borders',
-    category: 'Education',
-    description: 'Medical humanitarian aid organization.',
-  },
-];
 
 const getCategoryVariant = (category: string) => {
   switch (category) {
@@ -164,9 +144,21 @@ const stepVariants = {
 export const SignupPage = () => {
   const navigate = useNavigate();
   const addToast = useToastStore((state) => state.addToast);
+  const { data: charities = [], isLoading: isCharitiesLoading } = useCharities();
   const setAuthToken = useUserStore((state) => state.setAuthToken);
   const setUser = useUserStore((state) => state.setUser);
   const setSubscription = useUserStore((state) => state.setSubscription);
+
+  const charityOptions = useMemo<CharityOption[]>(
+    () =>
+      charities.map((charity) => ({
+        id: charity.id,
+        name: charity.name,
+        category: charity.isFeatured ? 'Featured' : 'Community',
+        description: charity.description,
+      })),
+    [charities],
+  );
 
   const [currentStep, setCurrentStep] = useState<SignupStep>(1);
   const [direction, setDirection] = useState<Direction>(1);
@@ -249,17 +241,18 @@ export const SignupPage = () => {
     setIsSubmitting(true);
 
     try {
-      const session = await signUpWithPassword(formData.email, formData.password);
+      await signUpWithEmail(formData.email, formData.password);
 
-      setAuthToken(session.access_token);
-
-      await registerProfile(session.access_token, {
+      const me = await registerUser({
         fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
         charityId: formData.charityId,
         contributionPercentage: formData.contributionPercentage,
       });
 
-      const me = await getMe();
+      const session = await signInWithPassword(formData.email, formData.password);
+      setAuthToken(session.access_token);
       setUser(me.user);
       setSubscription(me.subscription);
 
@@ -271,7 +264,18 @@ export const SignupPage = () => {
       navigate(`${ROUTES.SUBSCRIBE}?plan=monthly&charity=${formData.charityId}`);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to create account';
-      addToast({ type: 'error', message });
+      const normalized = message.toLowerCase();
+
+      if (normalized.includes('already') || normalized.includes('exists') || normalized.includes('registered')) {
+        setDirection(-1);
+        setCurrentStep(1);
+        setErrors((prev) => ({
+          ...prev,
+          email: 'An account with this email already exists.',
+        }));
+      } else {
+        addToast({ type: 'error', message });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -433,7 +437,15 @@ export const SignupPage = () => {
                 </p>
 
                 <div className={styles.charityGrid}>
-                  {CHARITY_OPTIONS.map((charity) => {
+                  {isCharitiesLoading
+                    ? Array.from({ length: 3 }).map((_, index) => (
+                        <div key={`charity-loading-${index}`} className={styles.charityOption}>
+                          <Skeleton height="20px" width="70%" />
+                          <Skeleton height="18px" width="42%" />
+                          <Skeleton height="14px" width="100%" />
+                        </div>
+                      ))
+                    : charityOptions.map((charity) => {
                     const isSelected = formData.charityId === charity.id;
 
                     return (

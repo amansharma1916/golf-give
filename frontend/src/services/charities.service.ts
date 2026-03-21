@@ -1,28 +1,24 @@
 import api from '../lib/axios';
-import type { ApiResponse } from '../types/api.types';
+import type { Charity } from '../types';
 
-type BackendCharity = {
-  id: string;
-  name: string;
-  description: string | null;
+export const getAllCharities = async (): Promise<Charity[]> => {
+  const res = await api.get('/charities');
+  return res.data.data;
 };
 
-export type CharityOption = {
-  id: string;
-  name: string;
-  description: string;
+export const getFeaturedCharities = async (): Promise<Charity[]> => {
+  const res = await api.get('/charities/featured');
+  return res.data.data;
 };
 
-export const fetchCharityOptions = async (): Promise<CharityOption[]> => {
-  const { data } = await api.get<ApiResponse<BackendCharity[]>>('/charities');
+export const getCharityById = async (id: string): Promise<Charity> => {
+  const res = await api.get(`/charities/${id}`);
+  return res.data.data;
+};
 
-  if (!data.success) {
-    throw new Error(data.error.message);
-  }
-
-  return data.data.map((charity) => ({
-    id: charity.id,
-    name: charity.name,
-    description: charity.description ?? '',
-  }));
+export const updateMyCharity = async (payload: {
+  charityId: string;
+  contributionPercentage: number;
+}): Promise<void> => {
+  await api.post('/charities/my-charity', payload);
 };

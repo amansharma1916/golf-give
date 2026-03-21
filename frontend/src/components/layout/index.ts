@@ -7,3 +7,4 @@ export { AuthLayout } from './AuthLayout';
 export { SubscribeLayout } from './SubscribeLayout';
 export { Sidebar } from './Sidebar';
 export { PageHeader } from './PageHeader';
+export { ErrorBoundary } from './ErrorBoundary';

@@ -6,6 +6,9 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
 import { useUserStore } from '../../../stores/userStore';
 import { Button, Badge } from '../../../components/ui';
+import { useDraws, useUpcomingDraw } from '../../../hooks/useDraws';
+import { useScores } from '../../../hooks/useScores';
+import { useWinnings } from '../../../hooks/useWinnings';
 import {
   containerVariants,
   itemVariants,
@@ -19,14 +22,6 @@ import {
   formatDate,
   formatMonth,
 } from '../../../lib/utils';
-import {
-  MOCK_MEMBER_USER,
-  MOCK_SUBSCRIPTION,
-  MOCK_SCORES,
-  MOCK_CHARITY_CONTRIBUTION,
-  MOCK_RECENT_DRAWS,
-  MOCK_DASHBOARD_STATS,
-} from '../../../lib/mockData';
 import styles from './DashboardHomePage.module.css';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -91,9 +86,12 @@ const DashboardHomeWidget = ({
 );
 
 export const DashboardHomePage = () => {
-  const user = useUserStore((state) => state.user) || MOCK_MEMBER_USER;
-  const subscription =
-    useUserStore((state) => state.subscription) || MOCK_SUBSCRIPTION;
+  const user = useUserStore((state) => state.user);
+  const subscription = useUserStore((state) => state.subscription);
+  const { data: myScores = [] } = useScores();
+  const { data: allDraws = [] } = useDraws();
+  const { data: upcomingDraw } = useUpcomingDraw();
+  const { data: winnings = [] } = useWinnings();
 
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
   const secondsRef = useRef<HTMLSpanElement>(null);
@@ -149,10 +147,50 @@ export const DashboardHomePage = () => {
   const monthProgress = Math.min((currentDay / daysInMonth) * 100, 100);
   const daysLeft = Math.max(30 - currentDay, 0);
 
-  const firstName = user.fullName.split(' ')[0];
-  const planLabel =
-    subscription.plan === 'monthly' ? 'Monthly' : 'Yearly';
-  const renewal = formatDate(subscription.currentPeriodEnd);
+  const firstName = user?.fullName?.split(' ')[0] ?? 'Member';
+  const planLabel = subscription?.plan === 'yearly' ? 'Yearly' : 'Monthly';
+  const renewal = formatDate(subscription?.currentPeriodEnd ?? new Date().toISOString());
+
+  const nextDrawMonth = upcomingDraw?.month ?? new Date().toISOString();
+  const nextDrawDate = new Date(nextDrawMonth);
+  const nextDrawDays = Math.max(
+    0,
+    Math.ceil((nextDrawDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+  );
+
+  const charityContribution = {
+    charityName: 'My Charity',
+    percentage: 10,
+    monthlyAmount: (subscription?.plan === 'yearly' ? 89.99 : 9.99) * 0.1,
+    totalContributed: winnings
+      .filter((entry: { status?: string }) => entry.status === 'paid')
+      .reduce((sum: number, _entry: { status?: string }) => sum + ((subscription?.plan === 'yearly' ? 89.99 : 9.99) * 0.1), 0),
+  };
+
+  const dashboardStats = {
+    totalWinnings: winnings
+      .filter((entry: { status?: string }) => entry.status === 'paid')
+      .reduce((sum: number, entry: { amount?: number }) => sum + (entry.amount ?? 0), 0),
+    drawsEntered: allDraws.length,
+    currentStreak: Math.min(myScores.length, 5),
+    nextDrawDays,
+  };
+
+  const recentDraws = allDraws.slice(0, 3).map((draw: { id: string; month: string; winningNumbers: number[] }) => {
+    const myNumbers = myScores.slice(0, 5).map((score) => score.score);
+    const matchCount = draw.winningNumbers.filter((num) => myNumbers.includes(num)).length;
+    return {
+      id: draw.id,
+      month: draw.month,
+      winningNumbers: draw.winningNumbers,
+      myNumbers,
+      matchCount,
+      isWinner: matchCount >= 3,
+      prizeAmount: matchCount >= 3 ? dashboardStats.totalWinnings : null,
+    };
+  });
+
+  type RecentDraw = (typeof recentDraws)[number];
 
   const activeMembers = 3245;
   const poolAmount = 34180;
@@ -174,8 +212,8 @@ export const DashboardHomePage = () => {
                 {getGreeting()}, {firstName} 👋
               </h1>
               <p className={styles.welcomeSub}>
-                Your next draw is in {MOCK_DASHBOARD_STATS.nextDrawDays} days.
-                You have {MOCK_SCORES.length} scores entered.
+                Your next draw is in {dashboardStats.nextDrawDays} days.
+                You have {myScores.length} scores entered.
               </p>
             </div>
 
@@ -201,10 +239,10 @@ export const DashboardHomePage = () => {
               <div>
                 <div className={styles.drawLabel}>Next draw</div>
                 <div className={styles.drawDate}>
-                  {formatMonth('2026-04-01')}
+                  {formatMonth(nextDrawMonth)}
                 </div>
               </div>
-              <Badge variant="info">Draw #{MOCK_DASHBOARD_STATS.drawsEntered + 1}</Badge>
+              <Badge variant="info">Draw #{dashboardStats.drawsEntered + 1}</Badge>
             </div>
 
             <div className={styles.countdown}>
@@ -426,7 +464,7 @@ export const DashboardHomePage = () => {
             </div>
 
             <div className={styles.scoresList}>
-              {MOCK_SCORES.map((score) => {
+              {myScores.map((score) => {
                 const colors = getScoreBallColor(score.score);
                 const badgeVariant = getScoreBadgeVariant(score.score);
                 const badgeLabel = getScoreBadgeLabel(score.score);
@@ -457,10 +495,10 @@ export const DashboardHomePage = () => {
             </div>
 
             <div className={styles.scoresFooter}>
-              {MOCK_SCORES.length < 5 ? (
+              {myScores.length < 5 ? (
                 <span>
-                  Add {5 - MOCK_SCORES.length} more score
-                  {MOCK_SCORES.length !== 4 ? 's' : ''} for maximum draw
+                  Add {5 - myScores.length} more score
+                  {myScores.length !== 4 ? 's' : ''} for maximum draw
                   entries
                 </span>
               ) : (
@@ -489,11 +527,11 @@ export const DashboardHomePage = () => {
                   color: 'var(--color-accent)',
                 }}
               >
-                {MOCK_CHARITY_CONTRIBUTION.charityName[0]}
+                {charityContribution.charityName[0]}
               </div>
               <div>
                 <div className={styles.charityName}>
-                  {MOCK_CHARITY_CONTRIBUTION.charityName}
+                  {charityContribution.charityName}
                 </div>
                 <Badge variant="info" size="sm">
                   Sports
@@ -524,7 +562,7 @@ export const DashboardHomePage = () => {
                       strokeDashoffset: 2 * Math.PI * 32,
                     }}
                     animate={{
-                      strokeDashoffset: 2 * Math.PI * 32 * (1 - MOCK_CHARITY_CONTRIBUTION.percentage / 100),
+                      strokeDashoffset: 2 * Math.PI * 32 * (1 - charityContribution.percentage / 100),
                     }}
                     transition={{
                       duration: 1,
@@ -535,7 +573,7 @@ export const DashboardHomePage = () => {
                   />
                 </svg>
                 <div className={styles.ringText}>
-                  {MOCK_CHARITY_CONTRIBUTION.percentage}%
+                  {charityContribution.percentage}%
                 </div>
               </div>
 
@@ -544,12 +582,12 @@ export const DashboardHomePage = () => {
                   of subscription to charity
                 </div>
                 <div className={styles.contributionAmount}>
-                  {formatCurrency(MOCK_CHARITY_CONTRIBUTION.monthlyAmount)} /
+                  {formatCurrency(charityContribution.monthlyAmount * 100)} /
                   month
                 </div>
                 <div className={styles.contributionTotal}>
                   Total contributed:{' '}
-                  {formatCurrency(MOCK_CHARITY_CONTRIBUTION.totalContributed)}
+                  {formatCurrency(charityContribution.totalContributed * 100)}
                 </div>
               </div>
             </div>
@@ -626,7 +664,7 @@ export const DashboardHomePage = () => {
                   🏆
                 </div>
                 <div className={styles.statValue}>
-                  {formatCurrency(MOCK_DASHBOARD_STATS.totalWinnings)}
+                  {formatCurrency(dashboardStats.totalWinnings * 100)}
                 </div>
               </div>
               <div className={styles.statLabel}>Total winnings</div>
@@ -634,7 +672,7 @@ export const DashboardHomePage = () => {
                 className={styles.statTrend}
                 style={{ color: 'var(--color-success)' }}
               >
-                +{formatCurrency(MOCK_DASHBOARD_STATS.totalWinnings)} this season
+                +{formatCurrency(dashboardStats.totalWinnings * 100)} this season
               </div>
             </motion.div>
 
@@ -654,7 +692,7 @@ export const DashboardHomePage = () => {
                   📅
                 </div>
                 <div className={styles.statValue}>
-                  {MOCK_DASHBOARD_STATS.drawsEntered}
+                  {dashboardStats.drawsEntered}
                 </div>
               </div>
               <div className={styles.statLabel}>Draws entered</div>
@@ -682,7 +720,7 @@ export const DashboardHomePage = () => {
                   🔥
                 </div>
                 <div className={styles.statValue}>
-                  {MOCK_DASHBOARD_STATS.currentStreak}
+                  {dashboardStats.currentStreak}
                 </div>
               </div>
               <div className={styles.statLabel}>Current streak</div>
@@ -710,7 +748,7 @@ export const DashboardHomePage = () => {
                   💖
                 </div>
                 <div className={styles.statValue}>
-                  {formatCurrency(MOCK_CHARITY_CONTRIBUTION.totalContributed)}
+                  {formatCurrency(charityContribution.totalContributed * 100)}
                 </div>
               </div>
               <div className={styles.statLabel}>Charity given</div>
@@ -733,8 +771,8 @@ export const DashboardHomePage = () => {
               </Link>
             </div>
 
-            {MOCK_RECENT_DRAWS.slice(0, 3).map((draw) => {
-              const matchingNumbers = draw.winningNumbers.filter((n) =>
+            {recentDraws.slice(0, 3).map((draw: RecentDraw) => {
+              const matchingNumbers = draw.winningNumbers.filter((n: number) =>
                 draw.myNumbers.includes(n),
               );
 
@@ -751,7 +789,7 @@ export const DashboardHomePage = () => {
                       Draw numbers:
                     </div>
                     <div className={styles.drawNumbersRow}>
-                      {draw.winningNumbers.map((num) => (
+                      {draw.winningNumbers.map((num: number) => (
                         <div
                           key={`win-${num}`}
                           className={styles.numberPill}
@@ -773,7 +811,7 @@ export const DashboardHomePage = () => {
 
                     <div className={styles.drawNumbersLabel}>My numbers:</div>
                     <div className={styles.drawNumbersRow}>
-                      {draw.myNumbers.map((num) => (
+                      {draw.myNumbers.map((num: number) => (
                         <div
                           key={`my-${num}`}
                           className={styles.numberPill}
