@@ -4,6 +4,10 @@ import { User, Subscription } from '../types';
 interface EditUserInput {
   fullName?: string;
   isAdmin?: boolean;
+  scores?: {
+    score: number;
+    playedAt: string;
+  }[];
 }
 
 interface AdminReports {
@@ -49,15 +53,44 @@ export async function editUser(userId: string, data: EditUserInput): Promise<Use
   if (data.fullName !== undefined) updateData.full_name = data.fullName;
   if (data.isAdmin !== undefined) updateData.is_admin = data.isAdmin;
 
-  const { data: user, error } = await supabase
+  if (data.scores !== undefined) {
+    const { error: deleteError } = await supabase.from('scores').delete().eq('user_id', userId);
+
+    if (deleteError) {
+      throw new Error('Failed to update user scores');
+    }
+
+    if (data.scores.length > 0) {
+      const rows = data.scores.map((item) => ({
+        user_id: userId,
+        score: item.score,
+        played_at: item.playedAt,
+      }));
+
+      const { error: insertError } = await supabase.from('scores').insert(rows);
+
+      if (insertError) {
+        throw new Error('Failed to update user scores');
+      }
+    }
+  }
+
+  if (Object.keys(updateData).length > 0) {
+    const { error: updateError } = await supabase.from('users').update(updateData).eq('id', userId);
+
+    if (updateError) {
+      throw new Error('Failed to update user');
+    }
+  }
+
+  const { data: user, error: userError } = await supabase
     .from('users')
-    .update(updateData)
+    .select('*')
     .eq('id', userId)
-    .select()
     .single();
 
-  if (error || !user) {
-    throw new Error('Failed to update user');
+  if (userError || !user) {
+    throw new Error('Failed to fetch updated user');
   }
 
   return user;

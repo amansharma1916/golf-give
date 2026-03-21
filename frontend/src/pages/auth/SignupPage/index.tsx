@@ -243,16 +243,14 @@ export const SignupPage = () => {
     try {
       await signUpWithEmail(formData.email, formData.password);
 
+      const session = await signInWithPassword(formData.email, formData.password);
+      setAuthToken(session.access_token);
+
       const me = await registerUser({
         fullName: formData.fullName,
-        email: formData.email,
-        password: formData.password,
         charityId: formData.charityId,
         contributionPercentage: formData.contributionPercentage,
       });
-
-      const session = await signInWithPassword(formData.email, formData.password);
-      setAuthToken(session.access_token);
       setUser(me.user);
       setSubscription(me.subscription);
 

@@ -68,6 +68,7 @@ export async function createDraw(
         month: normalizedMonth,
         status: 'pending',
         draw_type: drawType,
+        algorithm_mode: drawType === 'algorithmic' ? algorithmMode || 'most_common' : null,
         winning_numbers: [],
         jackpot_amount: 0,
         rolled_over_amount: 0,
@@ -97,10 +98,15 @@ export async function getDraw(drawId: string): Promise<Draw> {
   return data;
 }
 
-export async function simulateDraw_(drawType: 'random' | 'algorithmic'): Promise<any> {
+export async function simulateDraw_(
+  drawType: 'random' | 'algorithmic',
+  algorithmMode?: 'most_common' | 'least_common'
+): Promise<any> {
   if (drawType === 'random') {
     return simulateDraw('random');
   }
+
+  const engineMode = algorithmMode === 'least_common' ? 'least_frequent' : 'most_frequent';
 
   const { data: activeSubscriptions, error: subscriptionsError } = await supabase
     .from('subscriptions')
@@ -114,7 +120,7 @@ export async function simulateDraw_(drawType: 'random' | 'algorithmic'): Promise
   const userIds = (activeSubscriptions || []).map((subscription) => subscription.user_id);
 
   if (userIds.length === 0) {
-    return simulateDraw('algorithmic');
+    return simulateDraw('algorithmic', [], engineMode);
   }
 
   const { data: scoreRows, error: scoresError } = await supabase
@@ -138,7 +144,7 @@ export async function simulateDraw_(drawType: 'random' | 'algorithmic'): Promise
   }
 
   const scoreSnapshots = Array.from(groupedScores.values()).filter((scores) => scores.length > 0);
-  const result = simulateDraw('algorithmic', scoreSnapshots, 'most_frequent');
+  const result = simulateDraw('algorithmic', scoreSnapshots, engineMode);
   return result;
 }
 
@@ -405,11 +411,17 @@ export async function publishDraw(
 
 export async function configureDraw(
   drawId: string,
-  drawType: 'random' | 'algorithmic'
+  drawType: 'random' | 'algorithmic',
+  algorithmMode?: 'most_common' | 'least_common'
 ): Promise<Draw> {
+  const updateData = {
+    draw_type: drawType,
+    algorithm_mode: drawType === 'algorithmic' ? algorithmMode || 'most_common' : null,
+  };
+
   const { data, error } = await supabase
     .from('draws')
-    .update({ draw_type: drawType })
+    .update(updateData)
     .eq('id', drawId)
     .select()
     .single();

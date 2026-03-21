@@ -49,6 +49,7 @@ export interface Draw {
   month: string;
   status: 'pending' | 'simulated' | 'published';
   draw_type: 'random' | 'algorithmic';
+  algorithm_mode?: 'most_common' | 'least_common' | null;
   winning_numbers: number[] | null;
   jackpot_amount: number;
   rolled_over_amount: number;

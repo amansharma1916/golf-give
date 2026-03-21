@@ -123,3 +123,56 @@ export async function deleteCharity(charityId: string): Promise<void> {
     throw new Error('Failed to delete charity');
   }
 }
+
+export async function updateUserCharityPreference(
+  userId: string,
+  charityId: string,
+  contributionPercentage: number
+): Promise<void> {
+  const { data: charity, error: charityError } = await supabase
+    .from('charities')
+    .select('id')
+    .eq('id', charityId)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (charityError || !charity) {
+    throw new Error('Selected charity was not found');
+  }
+
+  const { data: existingContribution, error: existingError } = await supabase
+    .from('charity_contributions')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (existingError) {
+    throw new Error('Failed to fetch charity preference');
+  }
+
+  if (existingContribution) {
+    const { error: updateError } = await supabase
+      .from('charity_contributions')
+      .update({
+        charity_id: charityId,
+        percentage: contributionPercentage,
+      })
+      .eq('id', existingContribution.id);
+
+    if (updateError) {
+      throw new Error('Failed to update charity preference');
+    }
+
+    return;
+  }
+
+  const { error: insertError } = await supabase.from('charity_contributions').insert({
+    user_id: userId,
+    charity_id: charityId,
+    percentage: contributionPercentage,
+  });
+
+  if (insertError) {
+    throw new Error('Failed to update charity preference');
+  }
+}

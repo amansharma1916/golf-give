@@ -10,5 +10,11 @@ export const createCharitySchema = z.object({
 
 export const updateCharitySchema = createCharitySchema.partial();
 
+export const updateMyCharitySchema = z.object({
+  charityId: z.string().uuid('Invalid charity ID'),
+  contributionPercentage: z.number().int().min(10).max(100),
+});
+
 export type CreateCharityRequest = z.infer<typeof createCharitySchema>;
 export type UpdateCharityRequest = z.infer<typeof updateCharitySchema>;
+export type UpdateMyCharityRequest = z.infer<typeof updateMyCharitySchema>;

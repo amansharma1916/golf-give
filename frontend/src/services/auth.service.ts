@@ -107,8 +107,6 @@ export const getMe = async (): Promise<MeResponse> => {
 
 export const registerUser = async (payload: {
   fullName: string;
-  email: string;
-  password: string;
   charityId: string;
   contributionPercentage: number;
 }): Promise<MeResponse> => {

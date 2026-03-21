@@ -6,6 +6,7 @@ import {
   createCharity,
   updateCharity,
   deleteCharity,
+  updateUserCharityPreference,
 } from '../services/charities.service';
 import { createCharitySchema, updateCharitySchema } from '../validators/charities.validators';
 import { ApiResponse, Charity } from '../types';
@@ -122,6 +123,39 @@ export async function remove(req: Request, res: Response): Promise<void> {
     res.json(response);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to delete charity';
+    const response: ApiResponse<null> = {
+      success: false,
+      error: { message },
+    };
+    res.status(400).json(response);
+  }
+}
+
+export async function updateMyCharity(req: Request, res: Response): Promise<void> {
+  try {
+    if (!req.user?.id) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: { message: 'User not authenticated', code: 'UNAUTHENTICATED' },
+      };
+      res.status(401).json(response);
+      return;
+    }
+
+    const { charityId, contributionPercentage } = req.body as {
+      charityId: string;
+      contributionPercentage: number;
+    };
+
+    await updateUserCharityPreference(req.user.id, charityId, contributionPercentage);
+
+    const response: ApiResponse<{ message: string }> = {
+      success: true,
+      data: { message: 'Charity preference updated' },
+    };
+    res.json(response);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to update charity preference';
     const response: ApiResponse<null> = {
       success: false,
       error: { message },

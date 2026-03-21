@@ -78,7 +78,7 @@ export async function get(req: Request, res: Response): Promise<void> {
 export async function simulate(req: Request, res: Response): Promise<void> {
   try {
     const validatedData = simulateDrawSchema.parse(req.body);
-    const result = await simulateDraw_(validatedData.drawType);
+    const result = await simulateDraw_(validatedData.drawType, validatedData.algorithmMode);
 
     const response: ApiResponse<any> = {
       success: true,
@@ -120,7 +120,7 @@ export async function configure(req: Request, res: Response): Promise<void> {
   try {
     const validatedData = configureDrawSchema.parse(req.body);
     const { id } = req.params;
-    const draw = await configureDraw(id, validatedData.drawType);
+    const draw = await configureDraw(id, validatedData.drawType, validatedData.algorithmMode);
 
     const response: ApiResponse<Draw> = {
       success: true,
